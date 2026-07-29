@@ -1,0 +1,58 @@
+# Dependencias
+node_modules/
+.pnp
+.pnp.js
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Variables de entorno y credenciales
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Builds y salidas
+dist/
+build/
+out/
+coverage/
+*.tsbuildinfo
+
+# Caches
+.cache/
+.npm
+.eslintcache
+.parcel-cache/
+.vite/
+
+# Sistema operativo
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+# Editores
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+*~
+
+# Archivos temporales
+tmp/
+temp/
+*.tmp
+
+# Borradores de trabajo (no forman parte del proyecto)
+bases/
+
+# Claude Code — configuración local de la máquina
+.claude/settings.local.json
