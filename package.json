@@ -1,0 +1,11 @@
+{
+  "name": "crypto-visualizer",
+  "version": "1.0.0",
+  "description": "Visualizador de precios de Bitcoin y Ethereum usando la API de CoinGecko",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "license": "MIT"
+}
