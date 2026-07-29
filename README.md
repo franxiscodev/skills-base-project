@@ -190,14 +190,19 @@ nunca commitear una feature en `main`, siempre revisar el diff buscando secretos
 **Model Context Protocol**: un estándar para conectar Claude a herramientas y fuentes
 de datos externas. Cada servidor MCP expone tools que Claude puede llamar.
 
-### Qué resuelve Context7 en concreto
+### Qué resuelve Context7, en simple
 
 Claude tiene una fecha de corte de conocimiento. Todo lo que una librería cambió
-después, no lo sabe — pero **tampoco sabe que no lo sabe**, así que puede responderte
-con seguridad usando una API que ya no existe.
+después de esa fecha, no lo sabe — pero **tampoco sabe que no lo sabe**, así que
+puede responderte con total seguridad usando una API que ya no existe.
 
-Context7 va a buscar la documentación oficial **actual** de la librería antes de
-responder. Lee la fuente en vez de tirar de memoria.
+Context7 resuelve eso: antes de contestar sobre una librería, va a buscar su
+documentación oficial **actual** y responde con eso. En lugar de tirar de memoria,
+lee la fuente.
+
+En la prueba con React se ve el mecanismo: primero resolvió `React` →
+`/reactjs/react.dev`, y luego los ejemplos salieron de los archivos reales de
+react.dev, no de su memoria.
 
 ### Instalación
 
@@ -256,28 +261,32 @@ usa context7 para traerme la documentación actual de routing de Next.js
 Consejo sobre las queries: **una consulta = un concepto**. `"React useEffect cleanup
 function"` funciona; `"routing y auth y caching en Next.js"` no.
 
-### Cuándo aporta y cuándo no
+### Utilidades en el día a día
 
-**Sí aporta**
+- **Documentación al día** de librerías que cambian rápido
+- **APIs salidas después de la fecha de corte**
+- **Migraciones entre versiones mayores**
+- **Consulta de una versión concreta**, no "la última" — `/vercel/next.js/v14.3.0`
+- **Menos APIs inventadas** y firmas de funciones incorrectas
+- **Configuración exacta** de herramientas y build
+- **Ejemplos de código sacados de la doc oficial**, no reconstruidos de memoria
+- **Librerías de nicho** con poca presencia en el entrenamiento
+- **Uso de CLIs** y sus flags reales
+- **Servicios cloud y SDKs** con cambios frecuentes
+- **Alternativa a buscar en la web**: va directo a la doc del proyecto
+- **Onboarding a un stack** que no conoces
+- **Menos saltos al navegador** durante la sesión
 
-- Librerías que cambian rápido
-- APIs posteriores a la fecha de corte
-- Migraciones entre versiones mayores
-- Consultar una versión concreta (`/vercel/next.js/v14.3.0`)
-- Menos APIs inventadas y firmas incorrectas
-- Configuración exacta de herramientas y build
-- Librerías de nicho con poca presencia en el entrenamiento
-- Flags reales de CLIs
+### Dónde no aporta
 
-**No aporta**
+**Refactorizar tu propio código** · **Depurar lógica de negocio** · **Conceptos
+generales de programación** · **Código escrito desde cero sin librerías** ·
+**Librerías estables que llevan años sin cambiar**
 
-- Refactorizar tu propio código
-- Depurar lógica de negocio
-- Conceptos generales de programación
-- Librerías estables que llevan años igual
-
-Probamos con "cómo crear un componente funcional en React" y funcionó — pero es
-justo el caso donde no aporta: eso lleva años sin cambiar.
+Ese último caso es el de la prueba que hicimos: "cómo crear un componente funcional
+en React" funcionó perfectamente, pero no aportó nada que Claude no supiera ya. La
+diferencia real se nota con Server Components, hooks recientes como `use()` o
+migraciones entre versiones mayores.
 
 ### Detalles prácticos
 
