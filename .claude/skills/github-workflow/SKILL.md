@@ -103,6 +103,24 @@ confirmación**. Levantar una alerta explícita si:
 - Aparecen commits cuyo autor no es el usuario.
 - Van más commits de los esperados (indicio de una branch mal creada).
 
+### Comandos que piden entrada interactiva
+
+Un agente no puede escribir en un prompt interactivo: passphrases de SSH,
+`gh auth login`, `git rebase -i` o cualquier editor que se abra. El intento
+falla con un error engañoso — una passphrase no introducida se manifiesta como
+`Permission denied (publickey)`, que parece un problema de claves.
+
+Antes de una operación remota por SSH, comprobar si el agente tiene la clave cargada:
+
+```bash
+ssh-add -l          # "Error connecting to agent" o "no identities" = pedirá passphrase
+```
+
+Si va a pedirla, **no lanzar el comando**: avisar al usuario, darle el comando
+escrito para que lo ejecute en su terminal y esperar su confirmación antes de
+continuar. Ofrecer también la solución de fondo (cargar la clave en `ssh-agent`
+una sola vez) para que los siguientes push no requieran intervención.
+
 ### Prohibido sin petición explícita
 
 `git push --force` sobre una branch compartida. Si el usuario lo pide igualmente,
