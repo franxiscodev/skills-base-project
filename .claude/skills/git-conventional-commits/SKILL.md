@@ -7,6 +7,11 @@ description: Flujo de trabajo Git con Conventional Commits — usar al crear com
 
 Guía operativa para trabajar con Git generando un historial limpio, atómico y apto para changelogs automáticos y versionado semántico.
 
+Esta skill cubre el **contenido del mensaje** de commit. El **flujo de trabajo**
+—elegir la branch correcta, las comprobaciones antes de commitear y de hacer push,
+las pull requests y la recuperación de errores— lo cubre la skill `github-workflow`.
+Ambas se aplican a la vez cuando se va a commitear.
+
 ## Reglas no negociables
 
 1. **Nunca `git push --force`** sobre ramas compartidas (`main`, `master`, `develop`). Si hace falta reescribir historia publicada, avisar al usuario y esperar confirmación explícita.
@@ -103,3 +108,6 @@ BREAKING CHANGE: la estructura de la tabla de usuarios ha cambiado y requiere mi
 ## Referencia de comandos
 
 Ver [references/comandos.md](references/comandos.md) para el cheat sheet completo (configuración, inspección, ramas, remotos).
+
+Para el flujo completo —branches, push, pull requests, releases y cómo deshacer
+errores— ver la skill `github-workflow`.
