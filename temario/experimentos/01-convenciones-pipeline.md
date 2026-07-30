@@ -223,21 +223,38 @@ Y el corolario, que es probablemente lo más útil del experimento:
 
 ## 3. La skill
 
-*Pendiente de escribir.* El experimento ya ha decidido **qué debe decir y qué no**:
+📄 [`.claude/skills/pipeline-reglas-de-limpieza/SKILL.md`](../../.claude/skills/pipeline-reglas-de-limpieza/SKILL.md)
 
-**Fuera** — lo que el código ya enseña (6/6 lo respetaron): la firma, el `Recuento`,
-el encadenado, escribir un test. Meterlo sería pagar contexto por nada.
+**Fuera** — lo que el código ya enseña (6/6): la firma, el `Recuento`, el encadenado,
+escribir un test. Meterlo sería pagar contexto por algo ya resuelto.
 
-**Dentro** — solo lo que el código no puede mostrar:
+**Dentro** — solo los tres puntos donde hubo variación: los otros sitios a actualizar,
+el caso negativo, y el aviso sobre los datos de muestra.
 
-1. Los **otros sitios** que hay que actualizar al añadir una regla: el README y el
-   docstring del módulo.
-2. El **caso negativo**: un test que compruebe que la regla *no* afecta a lo que no
-   debe tocar.
-3. El **aviso** cuando los datos de muestra no ejercitan la regla nueva, porque
-   entonces el pipeline no demuestra nada.
+Es corta a propósito. Y es justo la contraria de la que íbamos a escribir al empezar.
 
-Es una skill corta. Y es justo la contraria de la que íbamos a escribir al empezar.
+### Decisiones de escritura
+
+**La `description`.** Es lo único que el agente ve antes de decidir si carga la skill,
+así que lleva:
+
+- **Qué resuelve, no qué es**: *"qué hay que actualizar **además del código**"*. Si
+  dijera "convenciones del pipeline" competiría con lo que el código ya hace.
+- **Disparadores literales** en el idioma en que se pide: *"añade una regla"*,
+  *"descarta las filas que..."*, *"filtra las ventas..."*, *"cambia el criterio"*.
+- **El fichero**: `src/pipeline/limpiar.py`. Un agente que va a editarlo debería
+  cargarla aunque la petición esté redactada de otra forma.
+
+**La sección "Lo que esta skill NO dice".** Va la primera, y es deliberado: evita que
+un lector futuro "complete" la skill añadiéndole el patrón que el código ya enseña.
+Sin esa sección, esta skill engorda sola en tres meses.
+
+**Cada regla lleva su medición** (`1 de 6`, `3 de 6`). Convierte la skill en algo
+falsable: si mañana la medición cambia, la regla se cae. Una skill sin evidencia solo
+se puede discutir por opiniones.
+
+**"Cuándo dejar de usar esta skill".** Las condiciones del experimento caducan. Si
+`limpiar.py` deja de ser funciones hermanas, la medición no vale y la skill tampoco.
 
 ## 4. Después: con skill
 

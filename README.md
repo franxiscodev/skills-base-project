@@ -192,7 +192,7 @@ Los referencias se enlazan con Markdown normal desde el `SKILL.md`:
 Ver [references/recuperacion.md](references/recuperacion.md) para el procedimiento.
 ```
 
-### Las dos skills de este repo
+### Las tres skills de este repo
 
 Están **deliberadamente separadas** por responsabilidad, y se aplican a la vez:
 
@@ -209,6 +209,22 @@ Organizada en checkpoints, que es lo que la hace utilizable:
 - **Checkpoint A** — antes de commitear: ¿en qué branch estoy? ¿debería ramificar?
 - **Checkpoint B** — commit en la branch equivocada: cómo recuperarlo
 - **Checkpoint C** — antes de push: origen, destino, commits exactos, confirmación
+
+#### `pipeline-reglas-de-limpieza` — lo que el código **no** puede enseñar
+
+La única que se escribió **después de medir si hacía falta**, y la más interesante
+por lo que **no** dice: no describe cómo se escribe una regla —firma, `Recuento`,
+encadenado, test—, porque se comprobó que el código ya lo enseña solo. Seis intentos
+con dos modelos distintos, seis aciertos.
+
+Cubre únicamente los tres puntos donde sí hubo fallos: qué otros ficheros hay que
+actualizar, el test del caso que **no** debe verse afectado, y avisar cuando los
+datos de muestra no ejercitan la regla nueva.
+
+El experimento completo, con las salidas reales, está en
+[`temario/experimentos/01-convenciones-pipeline.md`](temario/experimentos/01-convenciones-pipeline.md).
+
+> **Escribir bien el código es la forma más barata de no necesitar una skill.**
 
 ### Lecciones aprendidas al escribirlas
 
