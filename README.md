@@ -50,10 +50,22 @@ por regla, con su test al lado.
 Necesitas **Python 3.11+** y [uv](https://docs.astral.sh/uv/). Sin red, sin API
 keys y sin permisos de administrador: los datos se fabrican en local.
 
+`uv` se distribuye por PyPI, así que se instala como cualquier otro paquete —no
+hace falta descargar un binario ni pedir permisos:
+
 ```bash
-uv sync
-uv run python -m pipeline
+pip install uv
 ```
+
+Y luego:
+
+```bash
+uv sync                    # crea el entorno e instala las dependencias
+uv run python -m pipeline  # ejecuta el pipeline
+```
+
+`uv run` usa el entorno del proyecto sin que haya que activarlo a mano. Si tienes
+`VIRTUAL_ENV` apuntando a otro sitio, `uv` avisa y usa el correcto.
 
 Sale el informe en `datos/salida/informe.md` y un resumen por consola:
 
