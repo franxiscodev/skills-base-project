@@ -37,6 +37,12 @@ nadie más va a contarte.
 5. **Se registran las condiciones**: fecha, modelo, versiones. Un experimento sin
    condiciones no es reproducible ni refutable.
 6. **Si el resultado contradice la hipótesis, se publica igual.**
+7. **No se inspecciona el resultado hasta que el agente ha terminado.** Mirar el
+   working tree a mitad de ejecución devuelve un estado parcial que parece un
+   resultado: la función ya escrita y el test todavía no. Se registraría como "no
+   escribió el test" cuando lo que ocurría es que aún no había llegado. **Un
+   experimento sin diff guardado no ocurrió** — esa es la regla que lo evita: si no
+   hay `.diff`, no hay pasada.
 
 ---
 
