@@ -1,7 +1,8 @@
 # Experimento 01 — ¿Hace falta una skill para las convenciones del pipeline?
 
 > Método y reglas: [PLANTILLA.md](PLANTILLA.md).
-> **Estado: en curso.** Las secciones 1 y 2 están cerradas; la 3 y la 4, pendientes.
+> **Estado: en curso.** El "antes" está cerrado (6 pasadas, 2 modelos) y la decisión
+> tomada. Falta escribir la skill y medir el "después".
 
 **Hipótesis** *(escrita antes de ejecutar nada)*:
 
@@ -40,9 +41,9 @@ sobra. Lo único aislado era la conversación donde se diseñó el pipeline.
 
 | # | Función propia | Devuelve `Recuento` | Encadenada en `limpiar()` | Tests | Documenta el porqué | Actualiza README |
 |---|:-:|:-:|:-:|:-:|:-:|:-:|
-| 1 | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
-| 2 | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ |
-| 3 | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 1 | ✅ | ✅ | ✅ | ✅ (2) | ✅ | ❌ |
+| 2 | ✅ | ✅ | ✅ | ✅ (2) | ✅ | ❌ |
+| 3 | ✅ | ✅ | ✅ | ✅ (2) | ✅ | ✅ |
 
 **Tres de tres en el diseño. La hipótesis falló en las cinco predicciones.**
 
@@ -106,80 +107,174 @@ salida. Y esa diferencia no es casual:
 
 ---
 
+## 1.B El mismo prompt con un modelo más pequeño
+
+La pregunta que de verdad le importa a un equipo, porque **nadie usa el modelo más
+caro para todo**:
+
+> ¿La calidad del código sustituye a la skill **siempre**, o solo cuando el modelo es
+> lo bastante bueno?
+
+**Condiciones:** idénticas, salvo el modelo — **Claude Haiku 4.5, esfuerzo medium**.
+Pasadas 4, 5 y 6.
+
+| # | Función propia | `Recuento` | Encadenada | Tests | README | Commitea sin que se lo pidan |
+|---|:-:|:-:|:-:|:-:|:-:|:-:|
+| 4 | ✅ | ✅ | ✅ | ✅ (1) | ❌ | ⚠️ sí |
+| 5 | ✅ | ✅ | ✅ | ✅ (1) | ❌ | ⚠️ sí |
+| 6 | ✅ | ✅ | ✅ | ✅ (1) | ❌ | no |
+
+### El patrón estructural aguanta: 6 de 6
+
+**Los dos modelos respetaron la convención sin excepción.** Función propia, misma
+firma, `Recuento` con su motivo, encadenada en el sitio correcto y con las tablas
+intermedias renumeradas. Ni una sola desviación en seis intentos.
+
+Esto responde la pregunta principal: **el código enseña el patrón, y lo enseña lo
+bastante bien como para que un modelo pequeño también lo copie.**
+
+### Dónde sí se separan los modelos
+
+| | Opus 5 | Haiku 4.5 |
+|---|---|---|
+| **Tests escritos** | 2 | 1 |
+| **El caso negativo** (que una devolución **no** se descarte) | 3/3 | 0/3 |
+| **Justifica por qué ese orden** | 3/3, con el detalle de `"0"` / `"0,00"` | superficial: "cuando ya es un número" |
+| **Detecta el hueco no pedido** (el generador no produce ceros) | 3/3 | 0/3 |
+| **Commitea sin permiso** | 0/3 | 2/3 |
+
+Las diferencias **no están en la estructura, están en la profundidad**:
+
+- Haiku escribe el test que demuestra que la regla funciona. Opus escribe además el
+  que demuestra que **no se pasa de frenada** — que una devolución con importe real
+  sobrevive. Ese segundo test es el que protege el criterio de negocio.
+- Ninguna pasada de Haiku avisó de que, con los datos de muestra, la regla nueva
+  descarta 0 filas y por tanto **no se puede comprobar que funcione en el pipeline
+  real**. Las tres de Opus lo señalaron sin que nadie lo pidiera.
+
+### El hallazgo lateral: quién decide commitear
+
+Haiku commiteó por iniciativa propia en 2 de 3 pasadas —una de ellas en una rama de
+documentación, para un cambio de código—. Opus, ninguna.
+
+Y el detalle que lo hace interesante: **el mensaje de commit era impecable**. Tipo,
+scope, imperativo, cuerpo explicando el porqué. La skill `git-conventional-commits`
+de este repo **se disparó y funcionó perfectamente con el modelo pequeño**.
+
+> Lo que falló no fue el formato, fue el juicio. La skill sabe **cómo** se escribe un
+> commit. La decisión de **si tocaba commitear** no está en ninguna skill — y ahí es
+> donde los modelos se separan.
+
+Es un argumento a favor de las skills, no en contra: hacen bien exactamente aquello
+para lo que se escriben, incluso con modelos modestos.
+
+---
+
 ## 2. ¿Merece una skill?
 
-Los tres filtros del árbol de decisión, con lo que acabamos de medir:
+Los tres filtros del árbol de decisión, con los seis resultados sobre la mesa. El
+tercero hay que responderlo **por separado para cada cosa que la skill diría**, y ahí
+está todo el hallazgo:
 
-| Filtro | Respuesta | Motivo |
+| Lo que diría la skill | ¿El agente lo hace mal sin ella? | Medición |
 |---|---|---|
-| ¿Le pasaría igual a otra persona? | **Sí** | Cualquiera que añada una regla se enfrenta a lo mismo |
-| ¿Va a volver a ocurrir? | **Sí** | El pipeline crecerá con más reglas |
-| **¿El agente lo haría mal sin ella?** | **No, para el diseño. Sí, para el alcance** | 3/3 clavaron el patrón; 1/3 actualizó el README |
+| Una regla = una función con la misma firma | **No** | 6/6 |
+| Devolver `Recuento` con su motivo | **No** | 6/6 |
+| Encadenarla en `limpiar()` en el sitio correcto | **No** | 6/6 |
+| Escribir un test de la regla | **No** | 6/6 |
+| **Cubrir también el caso que NO debe verse afectado** | **Sí** | 3/6 — solo Opus |
+| **Actualizar el README y el resto de sitios** | **Sí** | 1/6 |
+| **Avisar si la regla no queda ejercitada por los datos** | **Sí** | 3/6 — solo Opus |
 
-**Destino elegido: dividido, y esa es la conclusión del experimento.**
+Los otros dos filtros salen sí: le pasaría igual a cualquiera, y volverá a ocurrir
+cada vez que el pipeline crezca.
 
-- **El patrón → el código.** Ya está ahí, y funciona mejor que cualquier documento:
-  cinco ejemplos aplicados vencen a una descripción. Escribir una skill que repita lo
-  que el código ya comunica sería añadir contexto sin añadir criterio.
-- **El alcance → skill (candidata).** *"Al añadir una regla, actualiza también el
-  README y el docstring del módulo"* no se deduce de `limpiar.py`, y es donde hubo
-  variación real.
+### Destino: dividido. Y esa es la conclusión del experimento
+
+- **El patrón → el código.** Ya está ahí y funciona mejor que cualquier documento:
+  cinco ejemplos aplicados vencen a una descripción, y los copian los dos modelos sin
+  fallar una vez. Escribir una skill que repita lo que el código ya comunica sería
+  **añadir contexto sin añadir criterio** — exactamente lo que la tesis del curso pide
+  evitar.
+- **El alcance y la profundidad → skill.** Qué otros ficheros hay que tocar, qué caso
+  negativo hay que cubrir y qué avisar cuando la regla no queda ejercitada **no se
+  deducen de `limpiar.py`**, y es justo donde apareció toda la variación.
 
 ### La regla general que sale de aquí
 
-> **Si el criterio deja rastro en el código, el código lo enseña.
-> La skill hace falta cuando el criterio no deja rastro.**
+> **Lo que el código muestra, el código lo enseña. La skill hace falta para lo que el
+> código no puede mostrar.**
 
-Se comprueba mirando las dos skills que ya existen en este repo: ninguna trata de
-algo que se pueda leer en un fichero fuente. Conventional Commits no se ve en el
+Un fichero enseña sus propios patrones porque están a la vista, repetidos. Pero
+`limpiar.py` no puede decir *"y además actualiza el README"*, ni *"comprueba que los
+datos de muestra ejerciten la regla"*: eso no cabe en el código, porque no es código.
+
+Se confirma mirando las dos skills que ya existen en este repo: **ninguna trata de
+algo que se pueda leer en un fichero fuente.** Conventional Commits no se ve en el
 código. Comprobar la rama antes de commitear, tampoco.
 
-Corolario incómodo, y probablemente lo más útil de todo el experimento:
+Y el corolario, que es probablemente lo más útil del experimento:
 
 > **Escribir bien el código es la forma más barata de no necesitar una skill.**
+> Cada patrón que dejas evidente en el propio código es una skill que no tienes que
+> escribir, mantener ni pagar en contexto.
 
 ---
 
 ## 3. La skill
 
-*Pendiente.* Depende del resultado de la sección 4.
+*Pendiente de escribir.* El experimento ya ha decidido **qué debe decir y qué no**:
+
+**Fuera** — lo que el código ya enseña (6/6 lo respetaron): la firma, el `Recuento`,
+el encadenado, escribir un test. Meterlo sería pagar contexto por nada.
+
+**Dentro** — solo lo que el código no puede mostrar:
+
+1. Los **otros sitios** que hay que actualizar al añadir una regla: el README y el
+   docstring del módulo.
+2. El **caso negativo**: un test que compruebe que la regla *no* afecta a lo que no
+   debe tocar.
+3. El **aviso** cuando los datos de muestra no ejercitan la regla nueva, porque
+   entonces el pipeline no demuestra nada.
+
+Es una skill corta. Y es justo la contraria de la que íbamos a escribir al empezar.
 
 ## 4. Después: con skill
 
-*Pendiente.*
-
-### 4.1 Variante: ¿depende del modelo o del repositorio?
-
-Las pasadas 1-3 usaron el modelo más capaz disponible. Eso deja abierta la pregunta
-que de verdad le importa a un equipo, porque **nadie usa el modelo más caro para
-todo**:
-
-> ¿La calidad del código sustituye a la skill **siempre**, o solo cuando el modelo es
-> lo bastante bueno?
-
-**Pasada 4:** mismo prompt, sesión limpia, **Claude Haiku 4.5, esfuerzo medium**.
-
-- Si converge → la conclusión "el código enseña" queda blindada.
-- Si falla → la skill sí se justifica, y con un matiz mucho más útil: **la skill es lo
-  que iguala el resultado hacia abajo**, no lo que mejora el resultado hacia arriba.
-
-*Resultado: pendiente.*
+*Pendiente.* Se repetirá el mismo prompt, tres pasadas por modelo, y se comprobará
+por separado que la skill **se disparó** — que el resultado salga bien no prueba que
+se cargara.
 
 ---
 
 ## Qué aprendimos
 
-*Pendiente de cerrar.* Provisional, con las secciones 1 y 2 hechas:
+*Provisional: falta la sección 4.*
 
-1. La hipótesis falló en las cinco predicciones. **El "antes" no es un trámite: es
-   donde estaba toda la información.**
-2. Un repositorio con el patrón aplicado y explicado enseña mejor que un documento
-   que lo describe.
-3. La variación aparece exactamente donde el criterio no deja rastro.
+1. **La hipótesis falló en las cinco predicciones.** El "antes" no es un trámite
+   burocrático: era donde estaba toda la información. Sin él habríamos escrito una
+   skill inútil y celebrado que funcionaba.
+2. **Un repositorio con el patrón aplicado enseña mejor que un documento que lo
+   describe.** Cinco funciones hermanas convencieron a dos modelos distintos, seis
+   veces seguidas, sin una línea de instrucciones.
+3. **La variación aparece exactamente donde el criterio no deja rastro** — otros
+   ficheros, casos negativos, avisos sobre los datos. Ahí es donde una skill paga.
+4. **Un modelo más pequeño copia la estructura igual de bien, pero pierde
+   profundidad.** No se equivoca de forma distinta: hace menos. Es un argumento
+   fuerte para escribir la skill aunque tú uses el modelo grande, porque tu equipo
+   no lo hará siempre.
+5. **Las skills funcionan con modelos modestos.** La de commits se disparó con Haiku
+   y produjo mensajes impecables. Lo que no cubre una skill de formato es el
+   *juicio* — decidir si tocaba commitear.
 
 ## Cuándo NO hacer esto
 
-*Pendiente.*
+- **Cuando el patrón se pueda dejar evidente en el código.** Sale más barato escribir
+  bien el código que mantener una skill que lo describa.
+- **Cuando no puedas medir el "antes" en condiciones limpias.** Sin comparación, la
+  skill es una creencia.
+- **Cuando el proyecto vaya a cambiar de forma pronto.** Una skill que describe una
+  estructura inestable envejece antes de dispararse por primera vez.
 
 ## Condiciones y reproducibilidad
 
