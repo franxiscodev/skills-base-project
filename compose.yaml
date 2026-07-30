@@ -1,0 +1,7 @@
+services:
+  pipeline:
+    build: .
+    # `datos/` se monta desde el anfitrión para que el CSV y el informe queden en
+    # tu disco y no dentro del contenedor, que desaparece al terminar.
+    volumes:
+      - ./datos:/app/datos
