@@ -1,15 +1,18 @@
-# Dependencias
-node_modules/
-.pnp
-.pnp.js
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+# uv.lock SÍ se versiona: fija las versiones exactas y hace reproducible el entorno.
+
+# Datos: son derivados. El repo lleva el generador, no los datos que produce.
+datos/
 
 # Logs
 logs/
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
 
 # Variables de entorno y credenciales
 .env
