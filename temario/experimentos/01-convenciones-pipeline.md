@@ -1,8 +1,10 @@
-# Experimento 01 — ¿Hace falta una skill para las convenciones del pipeline?
+# Experimento 01 — Qué arregla y qué rompe una skill
+
+> Una regla escrita como tarea se cumple como tarea.
 
 > Método y reglas: [PLANTILLA.md](PLANTILLA.md).
-> **Estado: en curso.** El "antes" está cerrado (6 pasadas, 2 modelos) y la decisión
-> tomada. Falta escribir la skill y medir el "después".
+> **Estado: cerrado.** Doce pasadas —seis sin skill y seis con ella—, dos modelos, y
+> una anulada que se conserva porque explica por qué (§3.bis).
 
 **Hipótesis** *(escrita antes de ejecutar nada)*:
 
