@@ -21,8 +21,8 @@ los resultados concretos dependen del modelo y de la versión de las herramienta
 | 00 | La tesis: economía de contexto | pendiente |
 | 01 | Los tres mecanismos de contexto | pendiente |
 | 02 | [El árbol de decisión: dónde va cada cosa](02-arbol-de-decision.md) | ✅ |
-| 03 | Anatomía de una skill | pendiente |
-| 04 | El frontmatter: lo que decide si tu skill existe | pendiente |
+| 03 | [Anatomía de una skill](03-anatomia-de-una-skill.md) | ✅ |
+| 04 | [El frontmatter: lo que decide si tu skill existe](04-frontmatter.md) | ✅ |
 | 05 | [Cuándo **no** escribir una skill](05-cuando-no-escribir-una-skill.md) | ✅ |
 | 06 | Cuándo abrir una conversación nueva | pendiente |
 | — | [Anexo volátil](anexo-volatil.md) — rutas, flags y versiones | pendiente |
