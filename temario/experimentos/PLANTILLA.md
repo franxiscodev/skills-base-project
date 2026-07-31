@@ -43,6 +43,15 @@ nadie más va a contarte.
    escribió el test" cuando lo que ocurría es que aún no había llegado. **Un
    experimento sin diff guardado no ocurrió** — esa es la regla que lo evita: si no
    hay `.diff`, no hay pasada.
+8. **El "después" arranca en el mismo commit que el "antes".** Que `git status` esté
+   limpio no lo garantiza: si un commit intermedio se llevó el código de una pasada,
+   el árbol está limpio y contaminado a la vez. Se comprueba **lo que hay commiteado**,
+   no si hay cambios pendientes.
+9. **La skill no puede usar como ejemplo el caso con el que se va a medir.** Si lo
+   hace, el "después" no mide transferencia: mide copia. El ejemplo va cerca del
+   principio y lejos de la prueba. Es el *teaching to the test* de toda la vida, y
+   aparece solo, sin mala intención, porque al redactar la skill el caso de prueba es
+   lo que se tiene fresco.
 
 ---
 
@@ -160,5 +169,7 @@ El límite. En qué situaciones esta skill sobra, molesta o se queda obsoleta.
 | Escribir la skill y asumir que aportó | Obliga al "antes", tres veces |
 | Comparar peras con manzanas | Exige prompt idéntico |
 | Confundir "salió bien" con "se disparó la skill" | Lo comprueba por separado |
+| Arrancar el "después" en un repo ya tocado | Exige verificar el commit de partida |
+| Medir la skill con su propio ejemplo | Prohíbe que ejemplo y caso de prueba coincidan |
 | Material que caduca entero | Aísla versiones en "Condiciones" |
 | Vender en vez de enseñar | Exige la sección "Cuándo NO hacer esto" |

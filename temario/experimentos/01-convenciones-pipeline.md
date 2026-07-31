@@ -256,6 +256,44 @@ se puede discutir por opiniones.
 **"Cuándo dejar de usar esta skill".** Las condiciones del experimento caducan. Si
 `limpiar.py` deja de ser funciones hermanas, la medición no vale y la skill tampoco.
 
+## 3.bis Una pasada anulada, y por qué se cuenta
+
+La primera pasada del "después" salió **bien** y hubo que **tirarla**. Se conserva el
+diff como `exp01-despues-CONTAMINADA.diff`. Falló por dos motivos independientes.
+
+**Primero, el punto de partida no era el mismo.** El commit que cerraba la
+documentación del "antes" arrastró sin querer el código de una de las pasadas: la
+regla y su test entraron en el repo. El agente del "después" no se encontró la tarea
+del "antes" —*escribe la regla y todo lo demás*— sino solo *todo lo demás*. Prompt
+idéntico, condiciones distintas.
+
+> **Un "después" empieza en el mismo commit que el "antes".** Verificarlo con
+> `git status` no basta: el árbol estaba limpio, y aun así contaminado. Hay que mirar
+> **qué hay commiteado**, no si hay cambios pendientes.
+
+**Segundo, y peor: la skill contenía la respuesta.** Al escribirla usamos como
+ejemplos el mismo caso con el que íbamos a medirla —el importe a cero, la devolución
+que debe sobrevivir, el docstring de `convertir_tipos`—. El agente reprodujo los tres
+ejemplos casi literalmente. Eso no mide si la skill sirve: mide si el modelo sabe
+copiar un ejemplo que tiene delante.
+
+> **Una skill no puede usar como ejemplo el caso con el que se va a medir.** Si lo
+> hace, el "después" no mide transferencia, mide copia. El ejemplo tiene que estar
+> cerca del principio y lejos de la prueba.
+
+Es el error clásico de cualquier evaluación mal montada —*teaching to the test*— y
+apareció aquí sin mala intención: al redactar la skill teníamos el caso de prueba
+fresco y fue el ejemplo que salió solo. Solo se ve con un resultado delante.
+
+**Lo que sí sobrevive de esa pasada**, porque no estaba en la skill: el agente se negó
+a añadir a la tabla de defectos del README una fila que habría afirmado que el
+generador fabrica importes a cero, cuando no lo hace. Eso es criterio, no copia. Es
+una observación, no una medida.
+
+**Correcciones aplicadas antes de repetir:** el código volvió al estado previo, y los
+ejemplos del `SKILL.md` se reescribieron con reglas distintas de la de prueba
+(`imputar_ciudad`, `marcar_devoluciones`). El enunciado de cada regla no cambió.
+
 ## 4. Después: con skill
 
 *Pendiente.* Se repetirá el mismo prompt, tres pasadas por modelo, y se comprobará

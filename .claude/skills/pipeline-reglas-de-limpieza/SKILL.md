@@ -29,7 +29,8 @@ Una regla nueva no vive solo en `limpiar.py`. Antes de dar el trabajo por termin
 - [ ] **El docstring del módulo** `limpiar.py` — enumera las reglas en orden y dice
       cuáles descartan filas. Es lo primero que lee quien llega al fichero.
 - [ ] **El docstring de las reglas vecinas**, si tu cambio las convierte en falsas.
-      Ejemplo real: `convertir_tipos` decía ser *"la única función que descarta"*.
+      Varias se describen por contraste con las demás —*"clasifica, no elimina"*,
+      *"la única que descarta"*— y esas frases caducan cuando entra una regla nueva.
 
 > Medido: **1 de 6** actualizó el README por su cuenta. Es el punto más frágil.
 
@@ -39,10 +40,14 @@ Un test que demuestre que la regla funciona **no basta**. Hace falta el otro:
 
 - [ ] Un test que compruebe que la regla **no toca lo que no debe tocar.**
 
-Ejemplo: al descartar importes a cero, hay que demostrar que una devolución
-—cantidad negativa con importe real— **sobrevive**. Sin ese test, mañana alguien
-cambia `= 0` por `<= 0` y no se entera nadie: los tests siguen en verde y la
-facturación cambia.
+Ejemplo del repo: `imputar_ciudad` tiene el test de que rellena la ciudad ausente,
+y además `test_imputar_ciudad_no_descarta_la_venta`, que comprueba que la fila
+**sigue ahí**. El segundo es el que impide que mañana alguien convierta la
+imputación en un descarte sin que nadie se entere: los tests seguirían en verde y
+la facturación cambiaría.
+
+Para escribirlo, pregúntate qué fila está **cerca del límite de tu regla pero
+fuera de él**, y protégela.
 
 **El primer test protege la funcionalidad. El segundo protege el criterio de
 negocio**, que es el que de verdad cuesta reconstruir.
