@@ -296,15 +296,109 @@ ejemplos del `SKILL.md` se reescribieron con reglas distintas de la de prueba
 
 ## 4. Después: con skill
 
-*Pendiente.* Se repetirá el mismo prompt, tres pasadas por modelo, y se comprobará
-por separado que la skill **se disparó** — que el resultado salga bien no prueba que
-se cargara.
+**Mismo prompt exacto.** Punto de partida verificado por commit en las seis pasadas
+(`b1ff71b`), no solo por `git status` — ver §3.bis.
+
+**Condiciones:** sesión limpia · 31 de julio de 2026 · pasadas 1-3 Opus 5 (medium),
+4-6 Haiku 4.5 (medium)
+
+### ¿Se disparó?
+
+**6 de 6, y antes de leer una sola línea de código.** El registro de la sesión la
+muestra cargada inmediatamente después del prompt, antes del primer `Read`: se
+disparó por la `description` sola, contra el texto de la petición.
+
+Hay una huella todavía mejor, y conviene saber buscarla: en las seis pasadas el
+agente leyó `generar_datos.py`. **Nada en el prompt pide mirar el generador.** Esa
+lectura solo se explica por la §3 de la skill. Cuando busques evidencia de disparo,
+busca **una acción que no tenga otra causa posible** — vale más que el indicador de
+la interfaz.
+
+### Resultados de las seis pasadas
+
+| # | Modelo | Traza README | Fila falsa | Línea 433 | Caso negativo | Aviso de datos |
+|---|---|---|---|---|---|---|
+| 1 | Opus 5 | ✅ | ❌ la mete | ✅ la corrige | fuerte | completo |
+| 2 | Opus 5 | ✅ | ❌ la mete | ✅ la corrige | fuerte | completo |
+| 3 | Opus 5 | ✅ | ✅ | ❌ la deja | fuerte | completo |
+| 4 | Haiku 4.5 | ✅ | ✅ | ❌ la deja | medio | a medias |
+| 5 | Haiku 4.5 | ❌ inventada | ✅ | ❌ la deja | flojo | completo |
+| 6 | Haiku 4.5 | ✅ | ❌ la mete | ❌ la deja | **vacío** | el mejor de los seis |
+
+### Qué cambió respecto al "antes"
+
+| | Antes | Después |
+|---|---|---|
+| Toca el README | 1/6 | **6/6** |
+| Escribe un caso negativo | 3/6 | **6/6** |
+| Avisa de que los datos no ejercitan la regla | 3/6 | **6/6** |
+
+Los tres puntos al máximo. En lo que la skill mide, la skill funciona.
+
+Y el caso negativo pasa la prueba que importaba: **cada pasada lo formuló distinto.**
+La skill pone de ejemplo `imputar_ciudad`; las seis eligieron su propio límite —el
+importe negativo, el céntimo, la devolución con importe positivo—. Eso descarta que
+estuvieran copiando el ejemplo, que era el riesgo que se llevó por delante la pasada
+anulada.
+
+### Lo que la skill no consiguió
+
+**El README queda verdadero: 0 de 6.** Seis maneras de tocarlo, ninguna de dejarlo
+bien, y en tres variantes distintas:
+
+| Variante | Pasadas | Qué hizo |
+|---|---|---|
+| Añade una mentira | 1, 2, 6 | Mete en la tabla de defectos una fila que afirma que el generador fabrica importes a cero. Lo hace en la misma respuesta en la que explica que no los fabrica |
+| Deja una mentira | 3, 4, 5, 6 | La línea 433 sigue diciendo *"ejecuta los cinco pasos"* cuando ya son seis |
+| Inventa la salida | 5 | Escribe una traza de consola que el código no puede producir, teniendo el formato real en las líneas contiguas |
+
+**El caso negativo protege el criterio de verdad: 4 de 6** — Opus 3/3, Haiku 1/3.
+El peor es este, de la pasada 6:
+
+```python
+def test_descartar_importes_cero_no_toca_ventas_normales(con, tabla_cruda):
+    origen = tabla_cruda([VENTA, ("2", "15/03/2026", "Madrid", "Ratón", "1", "15.50")])
+```
+
+Dos ventas normales, ninguna cerca del límite. Que una venta de 15,50 € no valga cero
+no es un hallazgo. Cambia `<> 0` por `<= 0` y este test sigue en verde mientras
+desaparecen todas las devoluciones — exactamente el peligro que la skill nombra dos
+párrafos más arriba de donde el agente lo leyó.
+
+### El diagnóstico
+
+> **Una regla escrita como tarea se cumple como tarea.**
+>
+> *"Actualiza el README"* produce seis README tocados y cero correctos. *"Escribe el
+> caso negativo"* produce seis tests y dos vacíos.
+
+Lo que faltaba no era otro sitio en la lista —la línea 433 no estaba, pero añadirla
+solo mueve el problema una casilla—. Faltaba el **criterio de terminado**: *deja el
+README verdadero*; *elige la fila que está al lado del límite y fuera de él*. Un
+criterio decide también en los casos que la lista no enumera; una lista, no.
+
+### Y el hallazgo que solo se ve con las dos mitades
+
+**La fila falsa apareció 3 veces con skill y 0 veces sin ella.**
+
+No porque el "antes" fuera más cuidadoso: porque 5 de 6 **ni tocaban el README**, así
+que no tenían ocasión de mentir en él. La skill subió la cobertura del 17% al 100% y
+**creó un error que antes no existía**.
+
+> Una skill no solo añade aciertos: causa fallos propios. **Ninguna evaluación que
+> solo cuente aciertos los vería** — y contar solo aciertos es lo que hace todo el
+> mundo, porque para ver lo otro hace falta el "antes".
+
+### Hallazgo lateral: el juicio de commitear, otra vez
+
+Haiku commiteó sin que se lo pidieran en 1 de 3 pasadas del "después" (3 de 6 sumando
+el "antes"). La skill nueva no dice nada de commits y no tenía por qué; la de commits
+sigue produciendo mensajes impecables. Lo que ninguna de las dos cubre es **decidir si
+tocaba commitear**, que es juicio y no formato.
 
 ---
 
 ## Qué aprendimos
-
-*Provisional: falta la sección 4.*
 
 1. **La hipótesis falló en las cinco predicciones.** El "antes" no es un trámite
    burocrático: era donde estaba toda la información. Sin él habríamos escrito una
@@ -321,6 +415,19 @@ se cargara.
 5. **Las skills funcionan con modelos modestos.** La de commits se disparó con Haiku
    y produjo mensajes impecables. Lo que no cubre una skill de formato es el
    *juicio* — decidir si tocaba commitear.
+6. **Una regla escrita como tarea se cumple como tarea.** Es el resultado central del
+   "después": seis README tocados, cero correctos. Las reglas de una skill se
+   redactan como **criterio de terminado**, no como lista de sitios, porque el
+   criterio decide también donde la lista no llega.
+7. **Una skill causa fallos propios, no solo aciertos.** La mentira en la tabla de
+   defectos apareció 3 veces con skill y 0 sin ella, porque sin ella nadie tocaba el
+   fichero. Medir solo lo que la skill pretende mejorar deja ese coste invisible.
+8. **La prueba de que no hubo copia es la variación.** Las seis pasadas formularon el
+   caso negativo de forma distinta. Si todas hubieran reproducido el ejemplo de la
+   skill, el resultado no valdría — ver §3.bis.
+9. **Busca evidencia de disparo en una acción sin otra causa posible.** Las seis
+   leyeron `generar_datos.py`, que el prompt no menciona. Eso prueba más que
+   cualquier indicador de la interfaz.
 
 ## Cuándo NO hacer esto
 
@@ -330,16 +437,39 @@ se cargara.
   skill es una creencia.
 - **Cuando el proyecto vaya a cambiar de forma pronto.** Una skill que describe una
   estructura inestable envejece antes de dispararse por primera vez.
+- **Cuando el punto que quieres cubrir tenga un sitio más barato.** El 0/6 del README
+  sugiere que "mantener el README verdadero" puede no ser trabajo de una skill: un
+  test que compare la traza documentada con la salida real lo resolvería sin gastar
+  contexto ni depender de que el agente se acuerde. **Antes de reescribir una regla,
+  pregúntate si debería salir de la skill.**
+
+## Estado y siguiente paso
+
+El experimento está cerrado con seis pasadas antes y seis después. Queda abierto,
+como experimento 02:
+
+1. Reescribir §1 y §2 del `SKILL.md` en criterio en vez de en lista, y volver a medir
+   tres pasadas. **Si el 0/6 del README no se mueve, la conclusión no es "otra
+   redacción": es que ese punto no se arregla con una skill** y baja al código.
+2. Sembrar el importe cero en el generador y cuadrar las cifras del README — ya sin
+   comparación que romper.
 
 ## Condiciones y reproducibilidad
 
-- **Fecha:** 30 de julio de 2026
-- **Modelos:** pasadas 1-3, Claude Opus 5 (medium) · pasada 4, Claude Haiku 4.5 (medium)
+- **Fecha:** "antes", 30 de julio de 2026 · "después", 31 de julio de 2026
+- **Modelos:** tres pasadas con Claude Opus 5 (medium) y tres con Claude Haiku 4.5
+  (medium), en cada mitad del experimento
 - **Versiones:** Python 3.12 · DuckDB 1.5.5 · pytest 9.1.1 · uv 0.7.9
 - **Rama:** `docs/material-didactico`
-- **Cómo repetirlo:** partir del repo limpio, abrir sesión nueva sin contexto previo,
-  pegar el prompt tal cual, no responder a preguntas más allá de lo imprescindible,
-  no dejar commitear. Entre pasadas: `git checkout -- . ; git clean -fd`.
+- **Cómo repetirlo:** partir del repo **en el commit de referencia** —comprobado con
+  `git log`, no solo con `git status`—, abrir sesión nueva sin contexto previo, pegar
+  el prompt tal cual, no responder a preguntas más allá de lo imprescindible, y
+  guardar el diff antes de tocar nada. Entre pasadas: `git checkout -- . ; git clean
+  -fd`, o `git reset --hard <sha>` si el agente commiteó por su cuenta.
+- **Commit de referencia del "después":** `b1ff71b`
+- **Diffs guardados:** seis del "antes", seis del "después" y uno anulado
+  (`exp01-despues-CONTAMINADA.diff`). Viven fuera del repo: son el registro de la
+  medición, no código del proyecto.
 
 > Los resultados con modelos generativos **varían entre ejecuciones**. Este registro
 > documenta lo que ocurrió en las condiciones indicadas, no una garantía. Si al

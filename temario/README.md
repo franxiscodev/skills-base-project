@@ -36,7 +36,8 @@ caduca cuando en realidad caducó el 20%.
 | # | Experimento | Estado |
 |---|---|---|
 | — | [Plantilla y método](experimentos/PLANTILLA.md) | ✅ |
-| 01 | Convenciones del pipeline de datos | pendiente |
+| 01 | [Convenciones del pipeline de datos](experimentos/01-convenciones-pipeline.md) | ✅ cerrado |
+| 02 | Reescribir una regla en criterio, no en lista | pendiente |
 
 ---
 
