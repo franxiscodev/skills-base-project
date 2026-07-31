@@ -34,10 +34,10 @@ Es importante decir qué está probado y qué no, porque la tesis es fácil de s
 | Un servidor MCP conectado y no usado: **647 caracteres siempre, 0 invocaciones en 26 sesiones** | [Exp 04](experimentos/04-coste-de-un-mcp.md) |
 
 **Lo que no:** sigue sin medirse qué pasa cuando un MCP **se solapa** con una herramienta
-que el agente ya tiene. Se intentó y **la medición se anuló**: el servidor figuraba como
-conectado y no aportó ninguna herramienta a la sesión, así que la rama "con MCP" era la
-rama "sin MCP" disfrazada. Hasta que tenga número se enuncia como razonamiento, no como
-resultado. Este material distingue las dos cosas siempre.
+que el agente ya tiene. Se intentó y **la medición se anuló**: el servidor había quedado
+instalado en otro directorio —`claude mcp add` guarda por carpeta—, así que la rama "con
+MCP" era la rama "sin MCP" disfrazada. Hasta que tenga número se enuncia como razonamiento,
+no como resultado. Este material distingue las dos cosas siempre.
 
 ---
 

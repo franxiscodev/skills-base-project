@@ -232,11 +232,22 @@ La única invocación real del proyecto entero está en una sesión del 29 de ju
 La rama B se ejecutó y **no midió lo que decía medir**. Se cuenta entera porque el motivo
 del fallo vale más que la comparación que se buscaba.
 
-**Lo que decía el cliente** tras instalar:
+**La causa, y no es la que se publicó primero.** El servidor se instaló y conectó de
+verdad — pero **en otro directorio**:
 
-```
-github: https://api.githubcopilot.com/mcp/ (HTTP) - ✔ Connected
-```
+| Ámbito | Servidores |
+|---|---|
+| Global (`user`) | `context7` |
+| `C:\proyectos\devspell` | `github` |
+| `C:/Users/Francisco` | `github` |
+| **El repositorio donde corrían las pasadas** | **ninguno propio** |
+
+`claude mcp add` usa **scope `local` por defecto, que se guarda por directorio**. El comando
+se lanzó desde otra carpeta, así que el servidor quedó configurado allí. `claude mcp list`
+decía la verdad sobre *esa* carpeta.
+
+> **Un servidor MCP no está instalado «en tu máquina»: está instalado en un directorio.**
+> Y el mismo `claude mcp list` da respuestas distintas según desde dónde lo lances.
 
 **Lo que había realmente en las sesiones de la rama B**, comprobado en sus transcripciones:
 
@@ -376,17 +387,31 @@ sitio equivocado.
 25/26 mencionan, 0/26 usan. La mención es el peaje; la invocación es el beneficio. Contar
 la primera y llamarla la segunda es el error más fácil de cometer aquí.
 
-**5. «Connected» no significa disponible.** El servidor de GitHub se instaló, el cliente lo
-dio por conectado, no hubo ningún error — y no aportó una sola herramienta a las sesiones.
-Es la versión dura del punto 3: allí la lista declaraba de más y avisaba de que faltaba
-autorizar; aquí declaró de más **sin avisar de nada**.
+**5. Un MCP se instala en un directorio, no en una máquina.** `claude mcp add` usa scope
+`local` por defecto. Lanzarlo desde otra carpeta deja el servidor configurado allí, y
+`claude mcp list` seguirá diciendo `✔ Connected` — porque lo está, en esa carpeta. Fue lo
+que invalidó la rama B: el servidor existía y las sesiones corrían donde no estaba.
 
-> **Un servidor MCP puede estar instalado, conectado, sin errores y ser inexistente para el
-> agente.** La única comprobación que vale es buscar sus herramientas en la sesión.
+> **`claude mcp list` responde sobre el directorio desde el que lo lanzas, no sobre tu
+> instalación.** Es la misma trampa del punto 3 con otra cara: la lista no miente, es que
+> no contesta a la pregunta que crees que le haces.
 
-Y es lo que salvó el experimento. Sin esa comprobación, la rama B se habría publicado como
-*"empate: el MCP no aportó"* — la conclusión que yo esperaba, con un número que la
-respaldaba y un mecanismo completamente equivocado detrás.
+**6. Y este experimento se equivocó dos veces, en direcciones opuestas.**
+
+Primero se publicó que el servidor *"estaba conectado, sin errores, y no aportaba una sola
+herramienta"*, con la conclusión de que **«Connected» no significa disponible**. Sonaba
+bien y era falso: el servidor sí aportaba herramientas, en el directorio donde se instaló.
+
+El error no fue de datos —las transcripciones decían exactamente lo que yo leí— sino de
+salto: **de una ausencia observada a una causa inventada**, sin comprobar la explicación
+aburrida antes que la interesante. Y la aburrida estaba a un comando de distancia.
+
+> **Cuando una observación admite una causa mundana y otra publicable, la mundana se
+> comprueba primero.** Si no, el material acaba enseñando una regla que no existe.
+
+Lo que sí se sostiene de todo aquello es lo que salvó la rama B: comprobar el disparo. Sin
+esa comprobación, B se habría publicado como *"empate: el MCP no aportó"* — la conclusión
+que yo esperaba, con tres pasadas respaldándola y sin ningún MCP de por medio.
 
 > **El resultado que confirma lo que esperabas es el que menos veces se comprueba.**
 

@@ -20,11 +20,22 @@ bloque de instrucciones de context7                            → presente
 bloque de instrucciones de github                              → ausente
 ```
 
-`context7` aparece con todo en esas mismas sesiones. El registro sí guarda información de
-MCP; de `github` no había ninguna que guardar.
+**La causa:** `claude mcp add` usa scope `local` por defecto, que se guarda **por
+directorio**. El comando se lanzó desde otra carpeta, así que el servidor quedó configurado
+en `C:\proyectos\devspell` y `C:/Users/Francisco`, y **no** en el repositorio donde corrían
+las pasadas.
 
-**La rama B fue la rama A otra vez.** Un servidor configurado, reportado como conectado,
-sin errores, y con cero herramientas donde importa.
+`claude mcp list` decía `✔ Connected` y era cierto — sobre la carpeta desde la que se
+lanzó.
+
+**La rama B fue la rama A otra vez**, con el servidor existiendo en un sitio y las sesiones
+ejecutándose en otro.
+
+> ⚠️ **Corrección.** La primera versión de este documento atribuía la ausencia a que el
+> servidor *"estaba conectado y no aportaba ninguna herramienta"*, y sacaba de ahí que
+> «Connected» no significa disponible. **Era falso.** Las transcripciones decían lo que yo
+> leí; lo inventado fue la causa. Se corrigió al comprobar dónde estaba realmente
+> configurado, que era un solo comando.
 
 ---
 
@@ -38,10 +49,14 @@ Parte del coste medido, y lo que nadie publica.
 3. `MCP server github already exists in local config` → hace falta `remove` antes de
    reintentar.
 4. `claude mcp remove github` + `add` con la cabecera → `✔ Connected`.
-5. **Y aun así, cero herramientas en la sesión.**
+5. **Y aun así, cero herramientas en las sesiones** — porque los pasos 1 a 4 se ejecutaron
+   desde otra carpeta, y el scope por defecto es por directorio.
 
-Cuatro comandos, dos errores y una credencial escrita en claro en la configuración local
-para llegar a un servidor que no aportó nada.
+Cuatro comandos, dos errores y una credencial escrita en claro en la configuración local,
+para acabar con el servidor instalado donde no se iba a medir.
+
+> El paso 5 es el que más enseña: **ninguno de los cuatro anteriores dio el menor indicio
+> de que algo fuera mal.** El único síntoma estaba a un directorio de distancia.
 
 ---
 
