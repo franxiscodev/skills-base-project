@@ -24,7 +24,7 @@ los resultados concretos dependen del modelo y de la versión de las herramienta
 | 03 | [Anatomía de una skill](03-anatomia-de-una-skill.md) | ✅ |
 | 04 | [El frontmatter: lo que decide si tu skill existe](04-frontmatter.md) | ✅ |
 | 05 | [Cuándo **no** escribir una skill](05-cuando-no-escribir-una-skill.md) | ✅ |
-| 06 | Cuándo abrir una conversación nueva | pendiente |
+| 06 | [Cuándo abrir una conversación nueva](06-conversacion-nueva.md) | ✅ |
 | — | [Anexo volátil](anexo-volatil.md) — rutas, campos y versiones | ✅ |
 
 El **anexo volátil** existe a propósito: separa lo que caduca (nombres de fichero,

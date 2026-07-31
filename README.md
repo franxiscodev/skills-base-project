@@ -13,6 +13,13 @@ La diferencia en una frase: una skill es **conocimiento** (instrucciones que Cla
 lee), un MCP es **una herramienta** (algo que Claude ejecuta y que le devuelve datos
 que no tenía).
 
+> **El material didáctico está en [`temario/`](temario/)**: siete capítulos de criterio
+> y los experimentos que lo sostienen, con las salidas reales de cada pasada. Este
+> README explica **qué hay en el repo**; el temario explica **cómo se decidió**.
+>
+> Si vas con prisa: [el árbol de decisión](temario/02-arbol-de-decision.md) y
+> [cuándo **no** escribir una skill](temario/05-cuando-no-escribir-una-skill.md).
+
 ---
 
 ## El proyecto de ejemplo
@@ -398,13 +405,19 @@ base-project/
 │       ├── git-conventional-commits/
 │       │   ├── SKILL.md
 │       │   └── references/comandos.md
-│       └── github-workflow/
-│           ├── SKILL.md
-│           └── references/
-│               ├── gh-cli.md
-│               ├── pull-requests.md
-│               ├── releases-y-tags.md
-│               └── recuperacion.md
+│       ├── github-workflow/
+│       │   ├── SKILL.md
+│       │   └── references/
+│       │       ├── gh-cli.md
+│       │       ├── pull-requests.md
+│       │       ├── releases-y-tags.md
+│       │       └── recuperacion.md
+│       └── pipeline-reglas-de-limpieza/
+│           └── SKILL.md    ← la única escrita después de medir
+├── temario/                ← el material didáctico: criterio y mediciones
+│   ├── 00-la-tesis.md … 06-conversacion-nueva.md
+│   ├── anexo-volatil.md    ← lo que caduca, separado a propósito
+│   └── experimentos/       ← el método y las mediciones, con salidas reales
 ├── src/pipeline/
 │   ├── generar_datos.py    ← fabrica el CSV sucio, con semilla fija
 │   ├── cargar.py           ← DuckDB lee el CSV: todo como texto, a propósito
