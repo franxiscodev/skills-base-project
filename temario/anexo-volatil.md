@@ -111,6 +111,25 @@ claude mcp remove <nombre> [--scope user]                     # desde el mismo d
 `claude mcp remove` sin `--scope` actúa sobre el ámbito `local` **del directorio en el que
 estás**. Para limpiar de verdad hay que repetirlo en cada sitio donde se instaló.
 
+> ⚠️ **Puede no encontrar lo que sí está.** Si la entrada se guardó con una grafía de ruta
+> distinta de la que resuelve el comando, contesta `No MCP server named "…"` con el servidor
+> todavía en la configuración. Comprueba el resultado, no te fíes del mensaje.
+
+Para auditar el estado real, sin pasar por ningún comando:
+
+```bash
+python -c "
+import json,os
+d=json.load(open(os.path.expanduser('~/.claude.json'),encoding='utf-8'))
+print('global:', list(d.get('mcpServers',{}).keys()))
+for p,v in d.get('projects',{}).items():
+    s=(v.get('mcpServers') or {})
+    if s: print(' ', p, '->', list(s.keys()))
+"
+```
+
+Si hay que borrar a mano, **haz copia del fichero antes**: lo escribe la propia herramienta.
+
 ### Cómo comprobar que una sesión lo tiene de verdad
 
 El único método fiable, y el que no depende de ninguna interfaz:

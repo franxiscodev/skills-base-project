@@ -132,11 +132,19 @@ merece la pena:
 | Credencial | Un token guardado **en claro** en la configuración |
 | Residuos tras el experimento | 3 entradas en 3 ámbitos distintos, cada una con el token |
 
-El último punto es el más desagradable: **desinstalar no fue un comando, fueron tres**, y
+El último punto es el más desagradable: **desinstalar no fue un comando, fueron tres** —y
 solo porque llevábamos la cuenta de dónde habíamos escrito.
 
-> **Si añadir algo es un comando y quitarlo son tres, no estabas contando bien el coste de
-> añadirlo.**
+Y uno de los tres **no se pudo**. Desde la carpeta correcta, el comando de desinstalación
+contestó `No MCP server named "github"` mientras la entrada seguía en la configuración: se
+había guardado con una grafía de ruta que el propio comando ya no reconocía. Hubo que
+editar el fichero a mano.
+
+> **La misma diferencia de grafía que impidió instalarlo impidió después quitarlo.** Un
+> residuo con una credencial dentro, invisible para la herramienta que lo creó.
+
+> **Si añadir algo es un comando y quitarlo son tres —y uno no funciona—, no estabas
+> contando bien el coste de añadirlo.**
 
 ---
 
