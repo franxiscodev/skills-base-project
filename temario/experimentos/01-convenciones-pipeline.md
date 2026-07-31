@@ -454,7 +454,9 @@ como experimento 02:
    tres pasadas. **Si el 0/6 del README no se mueve, la conclusión no es "otra
    redacción": es que ese punto no se arregla con una skill** y baja al código.
 2. Sembrar el importe cero en el generador y cuadrar las cifras del README — ya sin
-   comparación que romper.
+   comparación que romper. **Hecho** en `31e1ec6`: la regla que quedó en el repo no
+   está escrita a mano, es la mejor de las dieciocho ejecuciones medidas, aplicada
+   tal cual desde su diff.
 
 ## Condiciones y reproducibilidad
 
