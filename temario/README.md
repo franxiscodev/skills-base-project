@@ -37,7 +37,8 @@ caduca cuando en realidad caducó el 20%.
 |---|---|---|
 | — | [Plantilla y método](experimentos/PLANTILLA.md) | ✅ |
 | 01 | [Convenciones del pipeline de datos](experimentos/01-convenciones-pipeline.md) | ✅ cerrado |
-| 02 | [¿Se arregla cambiando cómo está escrita la regla?](experimentos/02-criterio-vs-lista.md) | en curso |
+| 02 | [¿Se arregla cambiando cómo está escrita la regla?](experimentos/02-criterio-vs-lista.md) | ✅ cerrado |
+| 03 | Bajar al código lo que la skill no sostiene | pendiente |
 
 ---
 
