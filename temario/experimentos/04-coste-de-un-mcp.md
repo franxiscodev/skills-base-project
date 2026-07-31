@@ -1,12 +1,17 @@
 # Experimento 04 — Qué cuesta de verdad una capacidad instalada
 
-> **PRE-REGISTRO.** Este documento se escribe **antes de ejecutar ninguna pasada**.
-> Lo que hay debajo de "Resultados" está vacío a propósito. Si al terminar algo no
-> coincide con lo pre-registrado, se anota la discrepancia; no se reescribe la hipótesis.
+> **Estado: medidas A y B cerradas. Medida C pre-registrada y pendiente.**
+> Las secciones 0 a 2 se escribieron **antes de ejecutar nada**. La hipótesis se conserva
+> tal cual **aunque haya fallado**: reescribirla ahora sería inventar un acierto.
 
-**Hipótesis:** en este cliente, un servidor MCP conectado y no usado cuesta mucho menos
-de lo que dice la teoría —porque las definiciones se cargan bajo demanda— y el coste real
-no está en el peaje permanente sino en **el momento en que dos caminos hacen lo mismo**.
+**Hipótesis (pre-registrada, y ❌ refutada por la medida A):** en este cliente, un servidor
+MCP conectado y no usado cuesta mucho menos de lo que dice la teoría —porque las
+definiciones se cargan bajo demanda— y el coste real no está en el peaje permanente sino en
+**el momento en que dos caminos hacen lo mismo**.
+
+> **Lo que falló:** el peaje permanente resultó ser **mayor** que el de cualquier skill del
+> repositorio. Acerté en que los esquemas se cargan bajo demanda y me equivoqué en la
+> conclusión, porque el coste estaba en otro sitio que no había mirado.
 
 ---
 
@@ -154,31 +159,147 @@ Se escribe **ahora**, para no poder acomodarla al resultado.
 
 ---
 
-## Resultados
+## Enmienda al pre-registro (antes de ejecutar)
 
-*(Vacío. Se rellena al ejecutar, con la salida sin retocar.)*
+La medida B estaba mal diseñada y se corrige **antes de ejecutarla**, que es el único
+momento en que enmendar un pre-registro es legítimo.
+
+**El error:** iba a contarse buscando `context7` en los 18 diffs guardados. Pero un diff
+registra **el árbol de trabajo resultante**, no las herramientas que se invocaron. Habría
+salido `0/18` de forma trivial, y se habría leído como confirmación de la predicción.
+
+> **Un artefacto que no puede contener la señal tampoco puede refutarla.** Es la misma
+> trampa que la regla de disparo del [capítulo 04](../04-frontmatter.md): un buen resultado
+> no prueba que la skill se cargara.
+
+**El artefacto correcto** son las transcripciones de sesión, que sí registran cada llamada
+a herramienta. Es lo que se usa a partir de aquí.
 
 ---
 
-## Qué aprendimos
+## Resultados
 
-*(Vacío hasta tener las medidas.)*
+### Medida A — El peaje permanente: **647 caracteres, en todas las sesiones**
+
+Un servidor MCP conectado aporta al contexto permanente **dos cosas muy distintas**:
+
+| Qué | Cuándo entra | Tamaño |
+|---|---|---|
+| Bloque de instrucciones del servidor | **Siempre**, en cada sesión | **647 caracteres** |
+| Nombres de sus 2 herramientas | Siempre | Un nombre cada uno |
+| **Esquemas** de esas herramientas | **Solo al ir a invocarlas** | — |
+
+Comparado con lo que cuesta una skill instalada, que es su `description`:
+
+| | Caracteres permanentes |
+|---|---|
+| `git-conventional-commits` | 276 |
+| `pipeline-reglas-de-limpieza` | 338 |
+| `github-workflow` | 518 |
+| **Las tres skills juntas** | **1.132** |
+| **`context7`, un solo servidor MCP** | **647** |
+
+> **Un servidor MCP conectado cuesta más que cualquiera de las tres skills, y el 57 % de
+> las tres juntas.** Y a diferencia de una `description`, ese texto **no lo escribes tú**:
+> lo redacta quien publica el servidor, y le conviene ser persuasivo.
+
+Ese bloque no es neutro. El de `context7` dice, literalmente, *"Use even when you think you
+know the answer"* y *"Prefer this over web search"*. **Es instrucción de comportamiento, no
+descripción de capacidad**, y está en contexto en cada turno de cada sesión.
+
+### Medida B — La competencia: **0 invocaciones en 26 sesiones**
+
+Transcripciones del 30 y 31 de julio de 2026, el periodo que cubre las 19 pasadas de los
+experimentos 01 y 02.
+
+| | Predicción | Observado |
+|---|---|---|
+| Sesiones que **invocan** `context7` | 0 | **0 / 26** |
+| Sesiones que lo **mencionan** | — | 25 / 26 |
+
+Las dos filas juntas son el resultado, no la primera sola:
+
+> **25 de 26 sesiones «mencionan» `context7` y ninguna lo usa.** La mención es el bloque de
+> instrucciones del propio servidor, presente en el prompt de sistema. Quien audite su
+> contexto con un buscador de texto verá 25 aciertos y concluirá lo contrario de lo que
+> pasa.
+
+La única invocación real del proyecto entero está en una sesión del 29 de julio en la que
+`context7` **era el tema de conversación**. Ninguna pasada de experimento lo tocó.
+
+### Medida C — El caso solapado
+
+**Pendiente.** Requiere instalar el MCP de GitHub, que no está en esta máquina. No se
+rellena con razonamiento.
+
+---
+
+## Qué aprendimos (con A y B; C sigue abierta)
+
+**1. La hipótesis falló, y falló hacia el lado incómodo.** Se pre-registró que el coste
+sería *"mucho menor de lo que dice la teoría"*. Son 647 caracteres permanentes por
+servidor: más que cualquier skill de este repo. **El coste es real y es mayor de lo que yo
+esperaba.**
+
+**2. Pero el mecanismo que denuncia el [capítulo 00](../00-la-tesis.md) es el equivocado.**
+No se paga por *"la definición de cada herramienta"* —los esquemas se cargan bajo demanda,
+igual que el cuerpo de una skill—, se paga por **un bloque de instrucciones de
+comportamiento que el servidor te impone**. La frase del capítulo acierta en la magnitud y
+se equivoca en el porqué, y eso importa: **la conclusión práctica cambia.** Un servidor con
+50 herramientas y un servidor con 2 pueden costar lo mismo; lo que decide es cuánto texto
+haya escrito su autor.
+
+**3. `claude mcp list` no dice lo que hay en tu contexto.** Declaraba cinco conectores
+conectados que no aportan ninguna herramienta a la sesión. Auditar por ahí es auditar el
+sitio equivocado.
+
+**4. Buscar el nombre del servidor en tus sesiones da el resultado contrario al real.**
+25/26 mencionan, 0/26 usan. La mención es el peaje; la invocación es el beneficio. Contar
+la primera y llamarla la segunda es el error más fácil de cometer aquí.
+
+> **El peaje se cobra en todas las sesiones. El beneficio, en ninguna.** Ese es el caso
+> completo contra una capacidad instalada y no usada — y no hacía falta ninguna pasada
+> nueva para medirlo.
 
 ---
 
 ## Cuándo NO hacer esto
 
-*(Vacío hasta tener las medidas. Sin esta sección el capítulo estaría vendiendo.)*
+- **Si usas el servidor de verdad**, esto no dice nada en su contra: 647 caracteres a
+  cambio de documentación actualizada es un cambio excelente. Lo que se mide aquí es el
+  caso en que **no** lo usas.
+- **La medida A depende del servidor concreto.** Un servidor con un bloque de instrucciones
+  de dos líneas cuesta mucho menos. No generalices el número: **generaliza el sitio donde
+  mirar.**
+- **La medida B es correlacional.** Que no se invocara en 26 sesiones de trabajo con datos
+  no prueba que no sirva; prueba que en ese trabajo no aportó.
+- **Sin la medida C no hay conclusión sobre solapamiento**, que es el caso más caro y el
+  más frecuente en la práctica.
 
 ---
 
 ## Condiciones y reproducibilidad
 
-- **Fecha del pre-registro:** 31 de julio de 2026
+- **Fecha del pre-registro y de las medidas A y B:** 31 de julio de 2026
 - **Commit de partida:** `adc0d63`
-- **Modelos:** por fijar al ejecutar
 - **Cliente:** Claude Code (VS Code), Windows 11
-- **Inventario MCP al pre-registrar:** el de la sección 0
+- **Servidor medido:** `context7`
+- **Inventario MCP:** el de la sección 0
+- **Modelos:** no aplica a A ni a B — se miden sobre registros ya existentes, no sobre
+  pasadas nuevas. Aplicará a la medida C.
 
-> Los resultados con modelos generativos **varían entre ejecuciones**. Este registro
-> documentará lo que ocurrió en las condiciones indicadas, no una garantía.
+**Cómo repetirlo.** No hacen falta pasadas: se mide sobre lo que el cliente ya guarda.
+
+1. **El peaje (A).** Busca el bloque de instrucciones del servidor en el prompt de sistema
+   de cualquier transcripción de sesión y cuenta sus caracteres. Compáralo con la
+   `description` de tus skills, que es su equivalente exacto.
+2. **El uso (B).** En las transcripciones, cuenta **invocaciones**, no menciones: busca el
+   nombre del servidor como nombre de herramienta en un `tool_use`, no como texto libre. La
+   diferencia entre las dos cuentas fue aquí de 25 a 0.
+3. **El contraste.** Compara la lista de servidores que declara el cliente con las
+   herramientas realmente disponibles en la sesión. Si no coinciden, la lista no sirve para
+   auditar.
+
+> Los resultados con modelos generativos **varían entre ejecuciones**. Las medidas A y B no
+> dependen de eso —son recuentos sobre registros— pero **sí dependen de la versión del
+> cliente y del servidor**, que pueden cambiar el bloque de instrucciones sin avisar.

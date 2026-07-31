@@ -31,10 +31,12 @@ Es importante decir qué está probado y qué no, porque la tesis es fácil de s
 | Una skill **crea errores que antes no existían**: 0/6 → 3/6 afirmaciones falsas | [Exp 01](experimentos/01-convenciones-pipeline.md) |
 | **Cómo está redactada** cambia el resultado más que el contenido: 0/3 → 3/3 | [Exp 02](experimentos/02-criterio-vs-lista.md) |
 | Un punto que la skill no sostenía, **resuelto en 10 líneas de test** | [Exp 03](experimentos/03-bajar-al-codigo.md) |
+| Un servidor MCP conectado y no usado: **647 caracteres siempre, 0 invocaciones en 26 sesiones** | [Exp 04](experimentos/04-coste-de-un-mcp.md) |
 
-**Lo que no:** aquí no se ha medido que quitar servidores MCP mejore las decisiones de un
-agente. Es la parte de la tesis que falta, y hasta que tenga su experimento se enuncia
-como razonamiento, no como resultado. Este material distingue las dos cosas siempre.
+**Lo que no:** no se ha medido qué pasa cuando un MCP **se solapa** con una herramienta que
+el agente ya tiene — el caso más caro y el más frecuente. Está pre-registrado y sin
+ejecutar. Hasta que tenga número se enuncia como razonamiento, no como resultado. Este
+material distingue las dos cosas siempre.
 
 ---
 
@@ -42,9 +44,24 @@ como razonamiento, no como resultado. Este material distingue las dos cosas siem
 
 Tres costes, de menos a más incómodo.
 
-**1. El sitio.** Todo lo que instalas paga peaje permanente: la `description` de cada
-skill, la definición de cada herramienta de cada servidor MCP. No se cobra cuando se usa;
-se cobra siempre.
+**1. El sitio.** Todo lo que instalas paga peaje permanente, y se paga aunque no se use
+nunca. Medido en este repositorio ([exp 04](experimentos/04-coste-de-un-mcp.md)):
+
+| | Permanente en contexto |
+|---|---|
+| Una skill | Su `description`: **276–518 caracteres** |
+| Un servidor MCP | Su bloque de instrucciones: **647 caracteres** |
+
+Lo que **no** se paga por adelantado es el detalle: el cuerpo de la skill y los esquemas de
+las herramientas del MCP se cargan cuando hacen falta. Conviene saberlo porque cambia la
+conclusión práctica:
+
+> **El coste de un MCP no lo decide cuántas herramientas trae, sino cuánto texto escribió
+> su autor.** Y ese texto no lo controlas tú.
+
+En el caso medido son instrucciones de comportamiento, no descripciones: *"úsalo aunque
+creas que sabes la respuesta"*, *"prefiérelo a buscar en la web"*. Está delante del agente
+en cada turno de cada sesión, incluidas las 26 en las que no se invocó ni una vez.
 
 **2. La competencia.** Cuantas más opciones parecidas tenga delante, peor elige. Una skill
 mediocre no ocupa solo su sitio: **compite con la buena** en el momento de decidir cuál
@@ -86,6 +103,14 @@ De ahí sale la pregunta que ordena cualquier evaluación de un servidor MCP —
 Si ya hay un CLI que lo hace y el agente puede ejecutarlo, el MCP **añade contexto sin
 añadir capacidad**. Si en cambio permite algo que no era posible —ver el DOM de una
 aplicación corriendo, por ejemplo— eso es capacidad nueva y se paga con gusto.
+
+*(Medido: el peaje y la ausencia de uso. **Todavía razonamiento:** que el solapamiento con
+un CLI empeore el resultado. Es la medida C del [exp 04](experimentos/04-coste-de-un-mcp.md),
+pre-registrada y pendiente.)*
+
+Y una advertencia práctica que salió de la misma medición: **no audites esto con la lista
+de servidores conectados.** Declaraba cinco que no aportaban ninguna herramienta a la
+sesión. Lo que cuenta es lo que llega al contexto, no lo que dice el inventario.
 
 *(Razonamiento, no medición: pendiente de experimento propio.)*
 
