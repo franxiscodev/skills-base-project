@@ -471,9 +471,25 @@ como experimento 02:
   guardar el diff antes de tocar nada. Entre pasadas: `git checkout -- . ; git clean
   -fd`, o `git reset --hard <sha>` si el agente commiteó por su cuenta.
 - **Commit de referencia del "después":** `b1ff71b`
-- **Diffs guardados:** seis del "antes", seis del "después" y uno anulado
-  (`exp01-despues-CONTAMINADA.diff`). Viven fuera del repo: son el registro de la
-  medición, no código del proyecto.
+- **Diffs guardados:** en [`diffs/`](diffs/) — **cinco de las seis** del "antes", seis del
+  "después" (tres por modelo) y uno anulado (`exp01-despues-CONTAMINADA.diff`), que se
+  conserva a propósito. Estuvieron fuera del repositorio con el argumento de que eran
+  registro y no código; **la decisión estaba mal** y se corrigió al comprobar que sin ellos
+  ninguna cifra de esta página es verificable por quien la lee.
+
+> ⚠️ **La sexta pasada del "antes" no tiene diff guardado.** No hay
+> `exp01-pasada-6.diff`, y no aparece con ningún otro nombre.
+>
+> Según la [regla 7](PLANTILLA.md), **esa pasada no ocurrió**. El resultado honesto de
+> este experimento es por tanto **5/5 verificable, más una sexta registrada en su día y no
+> auditable hoy**. No cambia la conclusión —cinco de cinco sigue siendo unánime— pero el
+> `6/6` que aparece en los capítulos se apoya en un dato que ya nadie puede recontar.
+>
+> Se descubrió **al mover los diffs dentro del repositorio**, no antes. Guardar las pruebas
+> donde se pueden contar hizo visible en un minuto un hueco que llevaba semanas ahí. Es el
+> mejor argumento a favor del cambio de la regla 7, y el motivo de que este aviso se quede
+> aquí en lugar de arreglarse repitiendo la pasada: **repetirla ahora daría un dato nuevo,
+> no recuperaría el que falta.**
 
 > Los resultados con modelos generativos **varían entre ejecuciones**. Este registro
 > documenta lo que ocurrió en las condiciones indicadas, no una garantía. Si al

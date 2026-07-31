@@ -43,6 +43,11 @@ nadie más va a contarte.
    escribió el test" cuando lo que ocurría es que aún no había llegado. **Un
    experimento sin diff guardado no ocurrió** — esa es la regla que lo evita: si no
    hay `.diff`, no hay pasada.
+   **Y el diff se guarda dentro del repositorio**, en
+   [`experimentos/diffs/`](diffs/). Esta segunda mitad se añadió después, porque la
+   primera versión decía solo "guárdalo" y eso no basta: las pruebas acabaron sueltas
+   en el disco, fuera del material, y estuvieron a punto de darse por perdidas. **Una
+   prueba que no viaja con el experimento obliga a creerse el experimento.**
 8. **El "después" arranca en el mismo commit que el "antes".** Que `git status` esté
    limpio no lo garantiza: si un commit intermedio se llevó el código de una pasada,
    el árbol está limpio y contaminado a la vez. Se comprueba **lo que hay commiteado**,
@@ -52,6 +57,15 @@ nadie más va a contarte.
    principio y lejos de la prueba. Es el *teaching to the test* de toda la vida, y
    aparece solo, sin mala intención, porque al redactar la skill el caso de prueba es
    lo que se tiene fresco.
+10. **El artefacto tiene que poder contener la señal que buscas.** Antes de fijar cómo se
+    va a contar algo, comprueba que el registro elegido lo puede registrar. Un diff guarda
+    el árbol de trabajo, no las herramientas invocadas: contar invocaciones ahí da cero
+    siempre, y ese cero parece una confirmación. **Un artefacto que no puede contener la
+    señal tampoco puede refutarla.**
+11. **El pre-registro se enmienda antes de ejecutar, nunca después.** Si al preparar la
+    ejecución descubres que el diseño está mal, se corrige y se anota la enmienda con su
+    motivo. Una vez hay resultados, la hipótesis se conserva **aunque haya fallado**:
+    reescribirla entonces es inventar un acierto.
 
 ---
 
@@ -171,5 +185,8 @@ El límite. En qué situaciones esta skill sobra, molesta o se queda obsoleta.
 | Confundir "salió bien" con "se disparó la skill" | Lo comprueba por separado |
 | Arrancar el "después" en un repo ya tocado | Exige verificar el commit de partida |
 | Medir la skill con su propio ejemplo | Prohíbe que ejemplo y caso de prueba coincidan |
+| Pruebas que se pierden fuera del material | Exige guardarlas **dentro** del repositorio |
+| Contar en un registro que no puede contener la señal | Obliga a validar el artefacto antes de contar |
+| Acomodar la hipótesis al resultado | Solo permite enmendar el pre-registro antes de ejecutar |
 | Material que caduca entero | Aísla versiones en "Condiciones" |
 | Vender en vez de enseñar | Exige la sección "Cuándo NO hacer esto" |

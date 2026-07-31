@@ -1,0 +1,176 @@
+commit e5129636e934129a6e4957d64fba529aceb59eff
+Author: FranxiscoDev <franxiscodev@gmail.com>
+Date:   Fri Jul 31 14:43:43 2026 +0200
+
+    feat(pipeline): añadir regla que descarte ventas con importe cero
+    
+    Una venta con importe 0 es un registro fantasma que no representa dinero en
+    movimiento. Se descarta en vez de imputar, porque no se puede fingir facturación
+    que no existe.
+    
+    Co-Authored-By: Claude Haiku 4.5 <noreply@anthropic.com>
+
+diff --git a/README.md b/README.md
+index d062148..e33686c 100644
+--- a/README.md
++++ b/README.md
+@@ -35,7 +35,8 @@ de cualquier extracción real**:
+ | Importes con coma y con punto decimal | Un único criterio de conversión numérica |
+ | Espacios sobrantes y mayúsculas inconsistentes | Normalizar antes de agrupar, o los grupos salen partidos |
+ | Filas duplicadas exactas | Deduplicar, y decidir por qué clave |
+-| Ciudad e importe ausentes | Qué se imputa, qué se descarta y qué se registra |
++| Ciudad ausente | Imputarla o descartar la venta |
++| Importe cero | Una venta fantasma: descartar o contar como dinero en movimiento |
+ | Cantidades negativas (devoluciones) | Si restan del total o se cuentan aparte |
+ 
+ Cada uno de esos defectos se resuelve **siempre de la misma manera**. Y ahí está el
+@@ -76,6 +77,7 @@ Procesado
+   normalizar_texto: 500 filas, sin descartes
+   convertir_tipos: 500 → 490 (10 descartadas — fecha, importe o cantidad ilegibles)
+   imputar_ciudad: 490 filas, sin descartes
++  descartar_importes_cero: 490 filas, sin descartes
+   marcar_devoluciones: 490 filas, sin descartes
+ 
+ Resultado
+@@ -87,6 +89,11 @@ Resultado
+ **El pipeline dice siempre qué descartó y por qué.** Un total de facturación sin
+ saber cuántas filas se quedaron fuera es un número que no se puede auditar.
+ 
++**Nota:** los datos de muestra no generan ventas con importe cero, así que el paso
++`descartar_importes_cero` no descarta nada. Si quieres ver la regla en acción,
++puedes modificar `generar_datos.py` para que algunas ventas tengan importe 0.00
++(pero eso cambiará los totales del informe de referencia).
++
+ Los tests:
+ 
+ ```bash
+diff --git a/src/pipeline/limpiar.py b/src/pipeline/limpiar.py
+index e77e251..9ed8893 100644
+--- a/src/pipeline/limpiar.py
++++ b/src/pipeline/limpiar.py
+@@ -9,9 +9,10 @@ El orden importa y no es arbitrario:
+ 1. `deduplicar`   — antes de nada, para no arrastrar trabajo inútil.
+ 2. `normalizar_texto` — antes de agrupar: "  MADRID " y "Madrid" son la misma ciudad,
+    y si se agrupa antes de normalizar salen dos filas donde hay una.
+-3. `convertir_tipos`  — la única función que descarta filas.
++3. `convertir_tipos`  — convierte tipos y descarta valores ilegibles.
+ 4. `imputar_ciudad`   — después de convertir, sobre las filas que sobreviven.
+-5. `marcar_devoluciones` — clasifica, no elimina.
++5. `descartar_importes_cero` — una venta cero no es una venta.
++6. `marcar_devoluciones` — clasifica, no elimina.
+ 
+ Los nombres de tabla se interpolan en el SQL porque son constantes de este módulo,
+ nunca entrada externa. Los **valores** siempre van como parámetros.
+@@ -177,6 +178,33 @@ def imputar_ciudad(
+     )
+ 
+ 
++def descartar_importes_cero(
++    con: duckdb.DuckDBPyConnection, origen: str, destino: str
++) -> Recuento:
++    """Descarta las ventas con importe cero.
++
++    Una venta sin importe es un registro fantasma que no representa dinero en movimiento.
++    No se imputa como se hace con la ciudad: la facturación de una venta cero es cero,
++    y no debería ocupar espacio en un informe de análisis de ventas.
++    """
++    antes = _contar(con, origen)
++    con.execute(
++        f"""
++        CREATE OR REPLACE TABLE {destino} AS
++        SELECT * FROM {origen}
++        WHERE importe > 0
++        """
++    )
++    despues = _contar(con, destino)
++
++    return Recuento(
++        paso="descartar_importes_cero",
++        entrantes=antes,
++        salientes=despues,
++        motivo="importe cero",
++    )
++
++
+ def marcar_devoluciones(
+     con: duckdb.DuckDBPyConnection, origen: str, destino: str
+ ) -> Recuento:
+@@ -205,12 +233,13 @@ def marcar_devoluciones(
+ 
+ 
+ def limpiar(con: duckdb.DuckDBPyConnection, origen: str) -> tuple[str, list[Recuento]]:
+-    """Encadena las cinco reglas y devuelve la tabla final con sus recuentos."""
++    """Encadena las seis reglas y devuelve la tabla final con sus recuentos."""
+     pasos = [
+         (deduplicar, "_paso1_dedup"),
+         (normalizar_texto, "_paso2_texto"),
+         (convertir_tipos, "_paso3_tipos"),
+         (imputar_ciudad, "_paso4_ciudad"),
++        (descartar_importes_cero, "_paso5_importes"),
+         (marcar_devoluciones, TABLA_LIMPIA),
+     ]
+ 
+diff --git a/tests/test_limpiar.py b/tests/test_limpiar.py
+index c6ad3ab..bd9ae56 100644
+--- a/tests/test_limpiar.py
++++ b/tests/test_limpiar.py
+@@ -112,6 +112,42 @@ def test_imputar_ciudad_no_descarta_la_venta(con, tabla_cruda):
+     assert ciudades == [("Madrid",), (limpiar.CIUDAD_DESCONOCIDA,)]
+ 
+ 
++def test_descartar_importes_cero_elimina_ventas_sin_valor(con, tabla_cruda):
++    origen = tabla_cruda([VENTA, ("2", "15/03/2026", "Madrid", "Teclado", "1", "0.00")])
++    limpiar.normalizar_texto(con, origen, "texto")
++    limpiar.convertir_tipos(con, "texto", "tipos")
++    limpiar.imputar_ciudad(con, "tipos", "ciudad")
++
++    recuento = limpiar.descartar_importes_cero(con, "ciudad", "salida")
++
++    assert recuento.entrantes == 2
++    assert recuento.salientes == 1
++    assert recuento.descartadas == 1
++
++
++def test_descartar_importes_cero_respeta_ventas_con_importe(con, tabla_cruda):
++    """Una venta con importe positivo, aunque pequeño, no se descarta — pero una de 0.00 sí.
++
++    Si alguien cambia > a >= descartará también las ventas de 0.01€. Este test cae
++    si eso ocurre, porque la venta de 0.01 estaría entre las descartadas.
++    """
++    origen = tabla_cruda([
++        ("1", "15/03/2026", "Madrid", "Teclado", "1", "0.00"),
++        ("2", "15/03/2026", "Barcelona", "Monitor", "1", "0.01"),
++    ])
++    limpiar.normalizar_texto(con, origen, "texto")
++    limpiar.convertir_tipos(con, "texto", "tipos")
++    limpiar.imputar_ciudad(con, "tipos", "ciudad")
++
++    recuento = limpiar.descartar_importes_cero(con, "ciudad", "salida")
++
++    assert recuento.entrantes == 2
++    assert recuento.salientes == 1
++    assert recuento.descartadas == 1
++    ventas = con.sql("SELECT id_venta FROM salida").fetchall()
++    assert ventas == [(2,)]
++
++
+ def test_marcar_devoluciones_no_elimina_filas(con, tabla_cruda):
+     origen = tabla_cruda([VENTA, ("2", "15/03/2026", "Madrid", "Teclado", "-1", "29.90")])
+     limpiar.convertir_tipos(con, origen, "tipos")
+@@ -123,7 +159,7 @@ def test_marcar_devoluciones_no_elimina_filas(con, tabla_cruda):
+     assert marcas == [(False,), (True,)]
+ 
+ 
+-def test_limpiar_encadena_las_cinco_reglas(con, tabla_cruda):
++def test_limpiar_encadena_las_seis_reglas(con, tabla_cruda):
+     origen = tabla_cruda([VENTA, VENTA, ("2", "sin fecha", "  BILBAO ", "Ratón", "1", "15,50")])
+ 
+     tabla, recuentos = limpiar.limpiar(con, origen)
+@@ -134,6 +170,7 @@ def test_limpiar_encadena_las_cinco_reglas(con, tabla_cruda):
+         "normalizar_texto",
+         "convertir_tipos",
+         "imputar_ciudad",
++        "descartar_importes_cero",
+         "marcar_devoluciones",
+     ]
+     assert con.sql(f"SELECT count(*) FROM {tabla}").fetchone()[0] == 1

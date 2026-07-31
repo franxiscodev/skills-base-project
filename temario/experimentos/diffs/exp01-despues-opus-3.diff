@@ -1,0 +1,166 @@
+diff --git a/README.md b/README.md
+index d062148..01b1e12 100644
+--- a/README.md
++++ b/README.md
+@@ -75,6 +75,7 @@ Procesado
+   deduplicar: 510 → 500 (10 descartadas — filas idénticas en todas sus columnas)
+   normalizar_texto: 500 filas, sin descartes
+   convertir_tipos: 500 → 490 (10 descartadas — fecha, importe o cantidad ilegibles)
++  descartar_importe_cero: 490 filas, sin descartes
+   imputar_ciudad: 490 filas, sin descartes
+   marcar_devoluciones: 490 filas, sin descartes
+ 
+diff --git a/src/pipeline/limpiar.py b/src/pipeline/limpiar.py
+index e77e251..21a8489 100644
+--- a/src/pipeline/limpiar.py
++++ b/src/pipeline/limpiar.py
+@@ -9,9 +9,13 @@ El orden importa y no es arbitrario:
+ 1. `deduplicar`   — antes de nada, para no arrastrar trabajo inútil.
+ 2. `normalizar_texto` — antes de agrupar: "  MADRID " y "Madrid" son la misma ciudad,
+    y si se agrupa antes de normalizar salen dos filas donde hay una.
+-3. `convertir_tipos`  — la única función que descarta filas.
+-4. `imputar_ciudad`   — después de convertir, sobre las filas que sobreviven.
+-5. `marcar_devoluciones` — clasifica, no elimina.
++3. `convertir_tipos`  — descarta lo ilegible.
++4. `descartar_importe_cero` — descarta lo que no factura. Necesita el importe ya
++   convertido a número, así que no puede ir antes del paso 3.
++5. `imputar_ciudad`   — después de convertir, sobre las filas que sobreviven.
++6. `marcar_devoluciones` — clasifica, no elimina.
++
++Solo los pasos 3 y 4 descartan filas. Los demás reescriben o clasifican.
+ 
+ Los nombres de tabla se interpolan en el SQL porque son constantes de este módulo,
+ nunca entrada externa. Los **valores** siempre van como parámetros.
+@@ -102,7 +106,7 @@ def normalizar_texto(
+ def convertir_tipos(
+     con: duckdb.DuckDBPyConnection, origen: str, destino: str
+ ) -> Recuento:
+-    """Convierte texto a fecha, entero y decimal. **Es el único paso que descarta.**
++    """Convierte texto a fecha, entero y decimal. Descarta lo que no se deja leer.
+ 
+     Tres decisiones explícitas:
+ 
+@@ -145,6 +149,40 @@ def convertir_tipos(
+     )
+ 
+ 
++def descartar_importe_cero(
++    con: duckdb.DuckDBPyConnection, origen: str, destino: str
++) -> Recuento:
++    """Elimina las ventas cuyo importe es exactamente cero.
++
++    Una fila con importe 0 no aporta nada al total y sí distorsiona todo lo que se
++    calcula por venta —número de operaciones, importe medio, ranking de productos—.
++    Suelen ser líneas técnicas del sistema de origen: anulaciones, regalos o
++    cabeceras de pedido que se exportan como si fueran una venta más.
++
++    Dos límites deliberados, porque `= 0` no es lo mismo que "poco":
++
++    - **Un importe pequeño se queda.** 0,01 € es una venta con un importe raro, no
++      una no-venta. Solo el cero exacto es señal de que ahí no hubo operación.
++    - **Un importe negativo se queda.** Es el terreno de `marcar_devoluciones`, que
++      clasifica en vez de borrar; descartarlo aquí escondería una devolución real.
++
++    Va después de `convertir_tipos` por necesidad: hasta ahí el importe es texto, y
++    `"0,00"`, `"0.00"` y `"0"` son cadenas distintas que valen lo mismo.
++    """
++    antes = _contar(con, origen)
++    con.execute(
++        f"CREATE OR REPLACE TABLE {destino} AS SELECT * FROM {origen} WHERE importe <> 0"
++    )
++    despues = _contar(con, destino)
++
++    return Recuento(
++        paso="descartar_importe_cero",
++        entrantes=antes,
++        salientes=despues,
++        motivo="importe exactamente cero: no es una venta",
++    )
++
++
+ def imputar_ciudad(
+     con: duckdb.DuckDBPyConnection, origen: str, destino: str
+ ) -> Recuento:
+@@ -205,12 +243,13 @@ def marcar_devoluciones(
+ 
+ 
+ def limpiar(con: duckdb.DuckDBPyConnection, origen: str) -> tuple[str, list[Recuento]]:
+-    """Encadena las cinco reglas y devuelve la tabla final con sus recuentos."""
++    """Encadena las seis reglas y devuelve la tabla final con sus recuentos."""
+     pasos = [
+         (deduplicar, "_paso1_dedup"),
+         (normalizar_texto, "_paso2_texto"),
+         (convertir_tipos, "_paso3_tipos"),
+-        (imputar_ciudad, "_paso4_ciudad"),
++        (descartar_importe_cero, "_paso4_sin_cero"),
++        (imputar_ciudad, "_paso5_ciudad"),
+         (marcar_devoluciones, TABLA_LIMPIA),
+     ]
+ 
+diff --git a/tests/test_limpiar.py b/tests/test_limpiar.py
+index c6ad3ab..c032a03 100644
+--- a/tests/test_limpiar.py
++++ b/tests/test_limpiar.py
+@@ -97,6 +97,45 @@ def test_convertir_tipos_descarta_lo_ilegible(con, tabla_cruda):
+     assert recuento.descartadas == 2
+ 
+ 
++def test_descartar_importe_cero_elimina_la_fila(con, tabla_cruda):
++    origen = tabla_cruda(
++        [
++            VENTA,
++            ("2", "15/03/2026", "Madrid", "Teclado", "1", "0.00"),
++            ("3", "15/03/2026", "Madrid", "Teclado", "1", "0,00"),
++        ]
++    )
++    limpiar.convertir_tipos(con, origen, "tipos")
++
++    recuento = limpiar.descartar_importe_cero(con, "tipos", "salida")
++
++    assert recuento.entrantes == 3
++    assert recuento.salientes == 1
++    assert recuento.descartadas == 2
++
++
++def test_descartar_importe_cero_respeta_lo_que_no_es_cero(con, tabla_cruda):
++    """El criterio es el cero exacto, no "importe pequeño" ni "importe raro".
++
++    Un céntimo es una venta con un importe extraño; una devolución con importe
++    negativo la clasifica `marcar_devoluciones`. Si mañana esta regla se convierte
++    en `importe <= 0` o en un umbral mínimo, este test lo dice.
++    """
++    origen = tabla_cruda(
++        [
++            ("1", "15/03/2026", "Madrid", "Teclado", "1", "0.01"),
++            ("2", "15/03/2026", "Madrid", "Teclado", "-1", "-29.90"),
++        ]
++    )
++    limpiar.convertir_tipos(con, origen, "tipos")
++
++    recuento = limpiar.descartar_importe_cero(con, "tipos", "salida")
++
++    assert recuento.descartadas == 0
++    importes = con.sql("SELECT importe FROM salida ORDER BY id_venta").fetchall()
++    assert importes == [(0.01,), (-29.90,)]
++
++
+ def test_imputar_ciudad_no_descarta_la_venta(con, tabla_cruda):
+     """Una venta sin ciudad sigue siendo una venta: su importe es real."""
+     origen = tabla_cruda(
+@@ -123,7 +162,7 @@ def test_marcar_devoluciones_no_elimina_filas(con, tabla_cruda):
+     assert marcas == [(False,), (True,)]
+ 
+ 
+-def test_limpiar_encadena_las_cinco_reglas(con, tabla_cruda):
++def test_limpiar_encadena_las_seis_reglas(con, tabla_cruda):
+     origen = tabla_cruda([VENTA, VENTA, ("2", "sin fecha", "  BILBAO ", "Ratón", "1", "15,50")])
+ 
+     tabla, recuentos = limpiar.limpiar(con, origen)
+@@ -133,6 +172,7 @@ def test_limpiar_encadena_las_cinco_reglas(con, tabla_cruda):
+         "deduplicar",
+         "normalizar_texto",
+         "convertir_tipos",
++        "descartar_importe_cero",
+         "imputar_ciudad",
+         "marcar_devoluciones",
+     ]

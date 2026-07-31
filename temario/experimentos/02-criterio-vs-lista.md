@@ -212,9 +212,9 @@ da un solo falso positivo en las 12 ejecuciones correctas.
 - **Versiones:** Python 3.12 · DuckDB 1.5.5 · pytest 9.1.1 · uv 0.7.9
 - **Rama:** `docs/material-didactico`
 - **Commit de referencia:** `f7e4e5b` — verificado con `git log` antes de cada pasada
-- **Diffs guardados:** `exp02-haiku-1/2/3.diff`, `exp02-opus-desempate.diff` (la
-  primera de Opus, con el nombre que tenía cuando se planificó) y
-  `exp02-opus-2/3.diff`. Fuera del repo: son registro de la medición, no código.
+- **Diffs guardados:** en [`diffs/`](diffs/) — `exp02-haiku-1/2/3.diff`,
+  `exp02-opus-desempate.diff` (la primera de Opus, con el nombre que tenía cuando se
+  planificó) y `exp02-opus-2/3.diff`.
 - **Cómo repetirlo:** igual que el [experimento 01](01-convenciones-pipeline.md), con
   el mismo prompt. La comparación exige partir del commit de referencia, no solo de un
   árbol limpio.

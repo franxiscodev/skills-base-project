@@ -1,0 +1,69 @@
+diff --git a/README.md b/README.md
+index d062148..01b1e12 100644
+--- a/README.md
++++ b/README.md
+@@ -75,6 +75,7 @@ Procesado
+   deduplicar: 510 → 500 (10 descartadas — filas idénticas en todas sus columnas)
+   normalizar_texto: 500 filas, sin descartes
+   convertir_tipos: 500 → 490 (10 descartadas — fecha, importe o cantidad ilegibles)
++  descartar_importe_cero: 490 filas, sin descartes
+   imputar_ciudad: 490 filas, sin descartes
+   marcar_devoluciones: 490 filas, sin descartes
+ 
+diff --git a/src/pipeline/limpiar.py b/src/pipeline/limpiar.py
+index 1ddabdb..63d55ed 100644
+--- a/src/pipeline/limpiar.py
++++ b/src/pipeline/limpiar.py
+@@ -103,7 +103,7 @@ def normalizar_texto(
+ def convertir_tipos(
+     con: duckdb.DuckDBPyConnection, origen: str, destino: str
+ ) -> Recuento:
+-    """Convierte texto a fecha, entero y decimal. **Es el único paso que descarta.**
++    """Convierte texto a fecha, entero y decimal. Descarta lo que no se puede leer.
+ 
+     Tres decisiones explícitas:
+ 
+@@ -115,6 +115,9 @@ def convertir_tipos(
+ 
+     Una fila sin fecha, sin importe o sin cantidad no es recuperable: no se puede
+     agregar por un mes que no existe. Se descarta y queda contada.
++
++    Descarta por **ilegibilidad**, no por criterio de negocio: el importe a cero se
++    lee perfectamente y lo descarta `descartar_importe_cero`, el paso siguiente.
+     """
+     antes = _contar(con, origen)
+     con.execute(
+diff --git a/tests/test_limpiar.py b/tests/test_limpiar.py
+index 03de232..7f76277 100644
+--- a/tests/test_limpiar.py
++++ b/tests/test_limpiar.py
+@@ -115,6 +115,29 @@ def test_descartar_importe_cero_elimina_ventas_sin_dinero(con, tabla_cruda):
+     assert recuento.descartadas == 2
+ 
+ 
++def test_descartar_importe_cero_respeta_las_devoluciones(con, tabla_cruda):
++    """El criterio es `= 0`, no `<= 0`: una devolución tiene importe real.
++
++    Sin este test, cambiar la condición a `importe <= 0` deja los tests en verde y
++    borra las devoluciones del informe sin que nadie se entere.
++    """
++    origen = tabla_cruda(
++        [
++            VENTA,
++            ("2", "15/03/2026", "Madrid", "Teclado", "-1", "-29.90"),
++            ("3", "15/03/2026", "Madrid", "Teclado", "1", "0"),
++        ]
++    )
++    limpiar.normalizar_texto(con, origen, "texto")
++    limpiar.convertir_tipos(con, "texto", "tipos")
++
++    recuento = limpiar.descartar_importe_cero(con, "tipos", "salida")
++
++    assert recuento.descartadas == 1
++    importes = [f[0] for f in con.sql("SELECT importe FROM salida ORDER BY id_venta").fetchall()]
++    assert importes == [59.80, -29.90]
++
++
+ def test_imputar_ciudad_no_descarta_la_venta(con, tabla_cruda):
+     """Una venta sin ciudad sigue siendo una venta: su importe es real."""
+     origen = tabla_cruda(
