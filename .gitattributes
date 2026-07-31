@@ -1,0 +1,4 @@
+# Los diffs de los experimentos son artefactos byte a byte, no texto editable.
+# Si Git les normaliza los finales de línea, dejan de aplicar limpiamente y pierden
+# lo único que los hace útiles: poder recontarlos con `git apply`.
+temario/experimentos/diffs/*.diff -text
