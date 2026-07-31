@@ -20,39 +20,47 @@ donde apareció toda la variación.
 
 ---
 
-## 1. Los otros sitios
+## 1. Que no quede ni una frase falsa
 
-Una regla nueva no vive solo en `limpiar.py`. Antes de dar el trabajo por terminado:
+El criterio **no** es "actualiza el README". Es que **no quede ni una afirmación falsa
+en el repositorio**. Suena a lo mismo y no lo es: medido, **6 de 6 tocaron el README y
+0 de 6 lo dejaron verdadero**.
 
-- [ ] **`README.md`** — la traza de ejemplo de la salida por consola lleva una línea
-      por paso. Si añades o quitas un paso y no la tocas, el README pasa a mentir.
-- [ ] **El docstring del módulo** `limpiar.py` — enumera las reglas en orden y dice
-      cuáles descartan filas. Es lo primero que lee quien llega al fichero.
-- [ ] **El docstring de las reglas vecinas**, si tu cambio las convierte en falsas.
-      Varias se describen por contraste con las demás —*"clasifica, no elimina"*,
-      *"la única que descarta"*— y esas frases caducan cuando entra una regla nueva.
+Dos preguntas, en este orden:
 
-> Medido: **1 de 6** actualizó el README por su cuenta. Es el punto más frágil.
+- [ ] **¿Qué afirmaciones acaba de volver falsas mi cambio? Búscalas, no las
+      recuerdes.** Cualquier texto que diga cuántos pasos hay, en qué orden van o cuál
+      es *"el único"* que hace algo. Empieza por el `README.md`, el docstring del
+      módulo y los de las reglas vecinas — pero eso es **por dónde empezar a buscar**,
+      no la lista de lo que hay que mirar. En la medición, la frase que más veces quedó
+      falsa estaba justo en el sitio que nadie habría enumerado.
+- [ ] **¿Es verdad lo que estoy añadiendo?** Si escribes una traza de consola,
+      **ejecútala y copia la salida real**. Si añades una fila a la tabla de defectos,
+      comprueba en `generar_datos.py` que ese defecto se fabrica de verdad.
 
-## 2. El caso negativo
+> Medido: **3 de 6 metieron en el README una afirmación falsa que no existía antes de
+> su cambio** — uno de ellos, en la misma respuesta en la que explicaba por qué era
+> falsa. El riesgo no es solo dejarse algo: es escribir de más.
 
-Un test que demuestre que la regla funciona **no basta**. Hace falta el otro:
+## 2. El test que se rompe si alguien afloja el criterio
 
-- [ ] Un test que compruebe que la regla **no toca lo que no debe tocar.**
+Un test que demuestre que la regla funciona **no basta**. El que hace falta es el que
+se pondrá **rojo** el día que alguien ensanche el criterio sin darse cuenta.
 
-Ejemplo del repo: `imputar_ciudad` tiene el test de que rellena la ciudad ausente,
-y además `test_imputar_ciudad_no_descarta_la_venta`, que comprueba que la fila
-**sigue ahí**. El segundo es el que impide que mañana alguien convierta la
-imputación en un descarte sin que nadie se entere: los tests seguirían en verde y
-la facturación cambiaría.
+- [ ] Escríbelo, y después **rompe la regla a propósito** —ensancha el operador, mete
+      un umbral, invierte la condición— y comprueba que ese test falla. Si sigue en
+      verde, no protege nada, por mucho que se llame *"caso negativo"*.
 
-Para escribirlo, pregúntate qué fila está **cerca del límite de tu regla pero
-fuera de él**, y protégela.
+Para elegir la fila: la que está **pegada al límite y del lado que se queda**. Una
+fila cualquiera que la regla no toca no sirve — de esas hay infinitas y ninguna
+demuestra nada.
 
-**El primer test protege la funcionalidad. El segundo protege el criterio de
-negocio**, que es el que de verdad cuesta reconstruir.
+Ejemplo del repo: `test_imputar_ciudad_no_descarta_la_venta`. Si mañana la imputación
+se convierte en un descarte, ese test cae. Sin él, los demás siguen verdes y la
+facturación cambia sola.
 
-> Medido: **3 de 6** escribieron el caso negativo.
+> Medido: **6 de 6** escribieron un caso negativo y solo **4 protegían el criterio**.
+> El más flojo comprobaba que una venta de 15,50 € no vale cero: cierto, e inútil.
 
 ## 3. El aviso sobre los datos de muestra
 
@@ -73,12 +81,11 @@ comparación con ejecuciones anteriores.
 ## Checklist final
 
 ```
-[ ] README.md actualizado si cambia el número o el orden de los pasos
-[ ] Docstring del módulo actualizado
-[ ] Docstrings vecinos que hayan quedado falsos
+[ ] Ninguna frase del repo sobre el pipeline ha quedado falsa — buscadas, no recordadas
+[ ] Ninguna frase que he añadido afirma algo que no he comprobado
 [ ] Test de que la regla hace lo que debe
-[ ] Test de que NO hace lo que no debe
-[ ] ¿Los datos de muestra ejercitan la regla? Si no, avisar
+[ ] Test que se pone rojo si alguien afloja el criterio — comprobado rompiéndola
+[ ] ¿Los datos de muestra ejercitan la regla? Si no, decirlo y ofrecer sembrarlo
 ```
 
 ## Cuándo dejar de usar esta skill
