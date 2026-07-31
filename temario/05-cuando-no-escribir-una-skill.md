@@ -173,7 +173,8 @@ Aplícalas a tu carpeta, hoy:
 
 1. **No se ha disparado nunca.** O la `description` está mal, o el caso no ocurre.
 2. **Describe algo que se lee abriendo un fichero.** Lo enseña el código.
-3. **Sus reglas son listas de sitios.** Enumerar caduca; el criterio no. *(Capítulo 03)*
+3. **Sus reglas son listas de sitios.** Enumerar caduca; el criterio no.
+   *(Ver el [capítulo 03](03-anatomia-de-una-skill.md))*
 4. **Nadie la ha tocado desde que se escribió, y el proyecto sí ha cambiado.**
 5. **No sabrías decir qué hacía mal el agente antes de tenerla.** Entonces no lo sabes.
 
