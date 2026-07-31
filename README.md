@@ -428,7 +428,7 @@ proyecto, la capacidad de leer documentación es tuya.
 ```bash
 # El pipeline
 uv sync                               # instala dependencias
-uv run python -m pipeline             # ejecuta los cinco pasos
+uv run python -m pipeline             # ejecuta el pipeline completo
 uv run python -m pipeline --solo-generar   # solo fabrica el CSV
 uv run pytest                         # tests
 docker compose run --rm pipeline      # sin instalar nada en local

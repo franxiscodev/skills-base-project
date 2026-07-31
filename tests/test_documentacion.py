@@ -98,3 +98,38 @@ def test_la_traza_del_readme_es_la_salida_real(tmp_path):
         "pipeline. Ejecuta `uv run python -m pipeline` y copia la salida literal "
         "en lugar de editarla a mano."
     )
+
+
+#: Cuentas escritas a mano en prosa: "los cinco pasos", "las seis reglas".
+CUENTA_EN_PROSA = re.compile(
+    r"\b(un|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|\d+)\s+"
+    r"(pasos?|reglas?|etapas?|m[óo]dulos?)\b",
+    re.IGNORECASE,
+)
+
+
+def test_el_readme_no_lleva_cuentas_escritas_a_mano():
+    """Prohíbe la construcción que caducó en catorce de las dieciocho ejecuciones.
+
+    La línea `# ejecuta los cinco pasos` quedó falsa una y otra vez al añadir una
+    regla. No es que se les olvidara mirarla: es que **una cuenta escrita en prosa
+    caduca cada vez que cambia el pipeline** y nada avisa.
+
+    Este test es más estricto que "¿es verdad?" a propósito. Tres ejecuciones la
+    dejaron cierta poniendo *"los seis pasos"* — y esa versión vuelve a caducar en el
+    cambio siguiente. El arreglo bueno no es actualizar el número sino escribir la
+    frase de forma que no dependa de él: *"ejecuta el pipeline completo"*. Cuatro
+    ejecuciones llegaron solas a esa solución; este test la impone para las demás.
+
+    Si algún día hace falta enumerar de verdad, la lista se genera desde el código.
+    """
+    hallazgos = [
+        f"  README.md:{numero}: {linea.strip()}"
+        for numero, linea in enumerate(README.read_text(encoding="utf-8").splitlines(), 1)
+        if CUENTA_EN_PROSA.search(linea)
+    ]
+
+    assert not hallazgos, (
+        "El README lleva una cuenta escrita a mano que caducará al cambiar el "
+        "pipeline. Reescribe la frase sin el número:\n" + "\n".join(hallazgos)
+    )
