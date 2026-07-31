@@ -162,6 +162,7 @@ del modelo y de la versión de las herramientas.
 | [04](04-frontmatter.md) | El frontmatter | Qué decide si tu skill llega a pasar |
 | [05](05-cuando-no-escribir-una-skill.md) | Cuándo **no** escribir una skill | Cuándo la respuesta es que no |
 | 06 | Cuándo abrir una conversación nueva | La misma tesis, dentro de la sesión |
+| 07 | Instalar una capacidad | Cuatro intentos, ningún error, tres mediciones perdidas |
 
 Si solo vas a leer dos, lee el **02** y el **05**. El resto es cómo hacerlo bien una vez
 has decidido que hay que hacerlo.

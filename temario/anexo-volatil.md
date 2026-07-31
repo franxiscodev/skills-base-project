@@ -77,6 +77,56 @@ coherente con lo que guarda —hechos sobre ti— pero sorprende la primera vez.
 
 ---
 
+## Servidores MCP: ámbitos y comandos
+
+El criterio está en el [capítulo 07](07-instalar-una-capacidad.md). Aquí solo la mecánica,
+que es lo que cambia.
+
+### Los tres ámbitos
+
+| Ámbito | Alcance | Dónde se guarda |
+|---|---|---|
+| `local` | **Solo ese directorio.** Es el valor por defecto | Configuración personal, indexada por ruta |
+| `user` | Todos tus proyectos | Configuración personal, sección global |
+| `project` | El repositorio, compartido con el equipo | Un fichero dentro del repo |
+
+> ⚠️ **`local` es el valor por defecto y es el más fácil de equivocar.** Se resuelve por la
+> ruta desde la que lanzas el comando, y **la ruta se compara como texto**: `C:/proyecto` y
+> `c:/proyecto` son dos entradas distintas para la misma carpeta. Nos costó tres
+> mediciones.
+
+> ⚠️ **`project` escribe un fichero dentro del repositorio.** Si el servidor necesita un
+> token, ese token acabaría commiteado. Para servidores con credencial, `user` o `local`.
+
+### Comandos
+
+```bash
+claude mcp add --scope user --transport http <nombre> <url>   # instalar
+claude mcp add ... --header "Authorization: Bearer $(...)"     # con credencial
+claude mcp list                                               # sobre el directorio actual
+claude mcp get <nombre>
+claude mcp remove <nombre> [--scope user]                     # desde el mismo directorio
+```
+
+`claude mcp remove` sin `--scope` actúa sobre el ámbito `local` **del directorio en el que
+estás**. Para limpiar de verdad hay que repetirlo en cada sitio donde se instaló.
+
+### Cómo comprobar que una sesión lo tiene de verdad
+
+El único método fiable, y el que no depende de ninguna interfaz:
+
+- En una sesión interactiva, `/mcp` muestra los servidores **con el número de herramientas**.
+  Cero herramientas y «conectado» pueden convivir.
+- En las transcripciones de sesión, la capacidad aparece como `deferred_tools_delta` con los
+  nombres. **Cuenta invocaciones** (`"name":"mcp__<servidor>__…"`), no menciones.
+
+### Credenciales
+
+Las cabeceras se guardan **en claro** en la configuración. Un token de `gh` reutilizado con
+`$(gh auth token)` evita crear uno nuevo, pero queda escrito igual.
+
+---
+
 ## `CLAUDE.md`
 
 Se busca en la raíz del proyecto y en la carpeta personal de configuración. **Este

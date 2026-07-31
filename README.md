@@ -13,7 +13,7 @@ La diferencia en una frase: una skill es **conocimiento** (instrucciones que Cla
 lee), un MCP es **una herramienta** (algo que Claude ejecuta y que le devuelve datos
 que no tenía).
 
-> **El material didáctico está en [`temario/`](temario/)**: siete capítulos de criterio
+> **El material didáctico está en [`temario/`](temario/)**: los capítulos de criterio
 > y los experimentos que lo sostienen, con las salidas reales de cada pasada. Este
 > README explica **qué hay en el repo**; el temario explica **cómo se decidió**.
 >

@@ -25,6 +25,7 @@ los resultados concretos dependen del modelo y de la versión de las herramienta
 | 04 | [El frontmatter: lo que decide si tu skill existe](04-frontmatter.md) | ✅ |
 | 05 | [Cuándo **no** escribir una skill](05-cuando-no-escribir-una-skill.md) | ✅ |
 | 06 | [Cuándo abrir una conversación nueva](06-conversacion-nueva.md) | ✅ |
+| 07 | [Instalar una capacidad: lo que nadie te cuenta antes](07-instalar-una-capacidad.md) | ✅ |
 | — | [Anexo volátil](anexo-volatil.md) — rutas, campos y versiones | ✅ |
 
 El **anexo volátil** existe a propósito: separa lo que caduca (nombres de fichero,
