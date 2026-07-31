@@ -227,9 +227,77 @@ Las dos filas juntas son el resultado, no la primera sola:
 La única invocación real del proyecto entero está en una sesión del 29 de julio en la que
 `context7` **era el tema de conversación**. Ninguna pasada de experimento lo tocó.
 
-### Medida C — El caso solapado
+### Medida C — El caso solapado: **anulada, y por un motivo mejor que el resultado**
 
-**Rama A cerrada** (sin MCP). Rama B pendiente de instalar el servidor.
+La rama B se ejecutó y **no midió lo que decía medir**. Se cuenta entera porque el motivo
+del fallo vale más que la comparación que se buscaba.
+
+**Lo que decía el cliente** tras instalar:
+
+```
+github: https://api.githubcopilot.com/mcp/ (HTTP) - ✔ Connected
+```
+
+**Lo que había realmente en las sesiones de la rama B**, comprobado en sus transcripciones:
+
+| | En las sesiones B |
+|---|---|
+| Bloque de instrucciones de `github` | **Ausente** |
+| Nombres de herramientas `mcp__github__*` | **Ninguno** |
+| Invocaciones a `mcp__github__*` | 0 |
+| *Control:* bloque e instrucciones de `context7` | Presentes |
+| *Control:* nombres `mcp__context7__query-docs`, `…resolve-library-id` | Presentes |
+
+El control es lo que lo cierra: **en esas mismas transcripciones `context7` sí aparece con
+todo**. No es que el registro no guarde información de MCP — es que de `github` no había
+ninguna que guardar.
+
+> **El servidor figuraba como conectado, no dio ningún error, y aportó cero herramientas a
+> la sesión.**
+
+Así que la rama B no fue *"con MCP disponible"*: fue **la rama A otra vez**, con un
+servidor configurado que no llegó a existir donde importaba. Comparar A con B habría sido
+comparar una condición consigo misma y publicar el empate como resultado.
+
+**Por qué se anula en lugar de arreglarse aquí:** hasta saber por qué el servidor no expone
+herramientas —lo más probable, que el token de `gh` no lleve el permiso que ese endpoint
+pide—, cualquier reintento mide algo distinto. La medida C sigue **pendiente**.
+
+---
+
+### Lo que sí queda medido: seis pasadas de la misma condición
+
+Como B resultó ser A repetida, las seis se agrupan. Es la muestra más grande de la campaña
+para una sola tarea.
+
+| | Resultado |
+|---|---|
+| Eligen `gh pr view 1 --json` | **6/6** |
+| Contestan bien lo que se preguntaba (`reviews: 0`) | **6/6** |
+| Alguna otra ruta (`git log`, web, preguntar) | 0/6 |
+
+Y el añadido no pre-registrado, ahora con n=6 en vez de n=3:
+
+| Pasada | Cifra afirmada | Real | |
+|---|---|---|---|
+| A1 | «0/6 correcto con skill» | no existe | ❌ |
+| A2 | 28 commits | 30 | ❌ |
+| A3 | — | — | ✅ |
+| B1 | «6 capítulos» | 7 (00–06) | ❌ |
+| B2 | 35 ficheros · ~3.800 adiciones · 7 en `temario/` | 36 · 4.100 · 9 | ❌ |
+| B3 | «30+ commits» | 30 | ✅ |
+
+> **4 de 6 metieron al menos una cifra falsa**, con la herramienta correcta, los datos
+> delante y una tarea de solo lectura. **Las dos que no fallaron son las que no dieron
+> cifras** — A3 no pidió los commits, B3 escribió «30+».
+>
+> Sigue sin ser un resultado pre-registrado y no se usa para comparar nada. Pero como
+> observación es la más reproducida de toda la campaña: aparece en los experimentos 01, 03
+> y aquí.
+
+---
+
+### La rama A, para el registro
 
 Condiciones: sesión limpia · 31 de julio de 2026 · commit `6e98ee7` · prompt del
 [guion](04-guion-medida-c.md), sin nombrar ninguna herramienta.
@@ -307,6 +375,20 @@ sitio equivocado.
 **4. Buscar el nombre del servidor en tus sesiones da el resultado contrario al real.**
 25/26 mencionan, 0/26 usan. La mención es el peaje; la invocación es el beneficio. Contar
 la primera y llamarla la segunda es el error más fácil de cometer aquí.
+
+**5. «Connected» no significa disponible.** El servidor de GitHub se instaló, el cliente lo
+dio por conectado, no hubo ningún error — y no aportó una sola herramienta a las sesiones.
+Es la versión dura del punto 3: allí la lista declaraba de más y avisaba de que faltaba
+autorizar; aquí declaró de más **sin avisar de nada**.
+
+> **Un servidor MCP puede estar instalado, conectado, sin errores y ser inexistente para el
+> agente.** La única comprobación que vale es buscar sus herramientas en la sesión.
+
+Y es lo que salvó el experimento. Sin esa comprobación, la rama B se habría publicado como
+*"empate: el MCP no aportó"* — la conclusión que yo esperaba, con un número que la
+respaldaba y un mecanismo completamente equivocado detrás.
+
+> **El resultado que confirma lo que esperabas es el que menos veces se comprueba.**
 
 > **El peaje se cobra en todas las sesiones. El beneficio, en ninguna.** Ese es el caso
 > completo contra una capacidad instalada y no usada — y no hacía falta ninguna pasada
