@@ -1,8 +1,8 @@
 # Experimento 04 — Qué cuesta de verdad una capacidad instalada
 
-> **Estado: medidas A y B cerradas. Medida C pre-registrada y pendiente.**
-> Las secciones 0 a 2 se escribieron **antes de ejecutar nada**. La hipótesis se conserva
-> tal cual **aunque haya fallado**: reescribirla ahora sería inventar un acierto.
+> **Estado: cerrado.** Las tres medidas ejecutadas. Las secciones 0 a 2 se escribieron
+> **antes de ejecutar nada**. La hipótesis se conserva tal cual **aunque haya fallado**:
+> reescribirla ahora sería inventar un acierto.
 
 **Hipótesis (pre-registrada, y ❌ refutada por la medida A):** en este cliente, un servidor
 MCP conectado y no usado cuesta mucho menos de lo que dice la teoría —porque las
@@ -227,10 +227,83 @@ Las dos filas juntas son el resultado, no la primera sola:
 La única invocación real del proyecto entero está en una sesión del 29 de julio en la que
 `context7` **era el tema de conversación**. Ninguna pasada de experimento lo tocó.
 
-### Medida C — El caso solapado: **anulada, y por un motivo mejor que el resultado**
+### Medida C — El caso solapado: **cerrada, al cuarto intento**
 
-La rama B se ejecutó y **no midió lo que decía medir**. Se cuenta entera porque el motivo
-del fallo vale más que la comparación que se buscaba.
+Con las dos rutas disponibles y ninguna instrucción sobre cuál usar:
+
+| Rama | Ruta elegida | Llamadas | Cifras exactas |
+|---|---|---|---|
+| **A** — sin MCP (n=3) | `gh pr view 1 --json` · **3/3** | 1, 1, 1 | 1 de 3 |
+| **B** — con MCP (n=3) | `mcp__github__pull_request_read` · **3/3** | 4, 4, 4 (+2-4 de apoyo) | 2 de 3 |
+
+**Nadie mezcló.** Cada rama eligió su herramienta por unanimidad, y las seis contestaron
+bien lo que se preguntaba (`reviews: 0`, `comments: 0`).
+
+> **Teniendo `gh` en el PATH y 44 herramientas de GitHub cargadas, el agente fue al MCP 3 de
+> 3.** La hipótesis de que un CLI ya autenticado se impondría al servidor es falsa: cuando
+> la herramienta específica está delante, se usa.
+
+**El coste, en el mismo sentido que la teoría predecía:** cuatro llamadas frente a una, más
+las de apoyo. Y en dos de las tres pasadas B una respuesta del MCP devolvió **161.848
+caracteres** y reventó el límite, obligando a volcarla a fichero y procesarla aparte con
+Python o PowerShell. `gh pr view --json` no llegó a ese tamaño ni una vez, porque el agente
+elegía los campos.
+
+> **La herramienta específica trae los datos completos; la genérica obliga a pedir lo que
+> quieres.** Ahí el MCP paga su factura: menos fricción para acertar, mucho más volumen.
+
+#### El detalle que ordena todo lo demás
+
+Las cifras de portada de las tres pasadas B —4.100 adiciones, 190 borrados, 36 ficheros, 30
+commits— salieron **exactas las tres veces**. Ninguna rama A lo consiguió.
+
+No es que el MCP razone mejor. Es que devuelve el número **ya calculado**:
+
+```json
+"additions":4100, "deletions":190, "changed_files":36, "commits":30
+```
+
+`gh pr view --json commits` devuelve el array entero y **obliga al agente a contarlo**. Ahí
+salieron el 28, el 35 y el «~3.800».
+
+Y B3 lo demuestra por dentro, en una sola respuesta:
+
+| En B3 | Cifra | Real | |
+|---|---|---|---|
+| Del objeto resumen del MCP | 36 ficheros | 36 | ✅ |
+| Contada por el agente sobre la lista | «26 nuevos, 2 modificados, 2 eliminados» | 32 · 2 · 2 | ❌ |
+
+La lista de ficheros venía **paginada a 30 de 36** y el agente contó sobre la página sin
+darse cuenta. En la misma respuesta convive el 36 correcto con un desglose que suma 30, sin
+una nota que lo advierta.
+
+> **El error no depende de la herramienta: depende de si el número viene hecho o hay que
+> hacerlo.** La misma pasada acierta con el dato servido y falla con el que calcula.
+
+---
+
+### Los tres intentos que hicieron falta antes
+
+La medida C se ejecutó **cuatro veces**. Las tres primeras se anularon, y las tres por la
+misma causa de fondo: **el servidor estaba bien, y la sesión no lo veía.**
+
+| Intento | Qué pasaba | Cómo se detectó |
+|---|---|---|
+| 1 | Instalado en otro **directorio** (scope `local`) | Sin nombres `mcp__github__*` en las transcripciones |
+| 2 | Sesión **abierta antes** de escribir la configuración | Igual |
+| 3 | El terminal escribía en `C:/…` y VS Code leía `c:/…` — **la misma carpeta con dos grafías** | Dos entradas de proyecto en la configuración |
+| 4 | Instalado con `--scope user` | 44 herramientas declaradas ✅ |
+
+En los tres fallos `claude mcp list` decía `✔ Connected` **y decía la verdad**. Contestaba
+sobre el directorio desde el que se lanzaba, que no era el de las pasadas.
+
+> **Ningún diagnóstico mintió y aun así tres mediciones se perdieron.** La comprobación que
+> las habría salvado desde el principio es la única que mira dónde importa: **buscar las
+> herramientas del servidor dentro de la sesión.**
+
+---
+
+### Anexo: la anulación del intento 1, por qué se conserva
 
 **La causa, y no es la que se publicó primero.** El servidor se instaló y conectó de
 verdad — pero **en otro directorio**:
@@ -287,24 +360,30 @@ para una sola tarea.
 | Contestan bien lo que se preguntaba (`reviews: 0`) | **6/6** |
 | Alguna otra ruta (`git log`, web, preguntar) | 0/6 |
 
-Y el añadido no pre-registrado, ahora con n=6 en vez de n=3:
+Y el añadido no pre-registrado, sobre **las siete pasadas que corrieron sin MCP** —las tres
+de la rama A y las cuatro de los intentos anulados, que fueron la misma condición:
 
 | Pasada | Cifra afirmada | Real | |
 |---|---|---|---|
 | A1 | «0/6 correcto con skill» | no existe | ❌ |
 | A2 | 28 commits | 30 | ❌ |
 | A3 | — | — | ✅ |
-| B1 | «6 capítulos» | 7 (00–06) | ❌ |
-| B2 | 35 ficheros · ~3.800 adiciones · 7 en `temario/` | 36 · 4.100 · 9 | ❌ |
-| B3 | «30+ commits» | 30 | ✅ |
+| Anulada 1 | «6 capítulos» | 7 (00–06) | ❌ |
+| Anulada 2 | 35 ficheros · ~3.800 adiciones · 7 en `temario/` | 36 · 4.100 · 9 | ❌ |
+| Anulada 3 | «30+ commits» | 30 | ✅ |
+| Anulada 4 | 35 commits | 30 | ❌ |
 
-> **4 de 6 metieron al menos una cifra falsa**, con la herramienta correcta, los datos
-> delante y una tarea de solo lectura. **Las dos que no fallaron son las que no dieron
-> cifras** — A3 no pidió los commits, B3 escribió «30+».
->
-> Sigue sin ser un resultado pre-registrado y no se usa para comparar nada. Pero como
-> observación es la más reproducida de toda la campaña: aparece en los experimentos 01, 03
-> y aquí.
+> **5 de 7 metieron al menos una cifra falsa**, con la herramienta correcta, los datos
+> delante y una tarea de solo lectura. **Las dos que no fallaron son las que no dieron una
+> cifra exacta** — una no pidió los commits, la otra escribió «30+».
+
+Frente a **1 de 3 en la rama con MCP**, y esa única con el mecanismo identificado: contar
+sobre una lista paginada en vez de leer el total servido.
+
+> Sigue sin ser un resultado pre-registrado, así que no se enuncia como conclusión del
+> experimento. Pero es la observación más reproducida de toda la campaña —aparece en el 01,
+> el 03 y aquí— y ahora **tiene mecanismo**: falla el número que hay que calcular, no el
+> que viene dado.
 
 ---
 
@@ -326,45 +405,30 @@ entre pasadas está solo en **qué campos pidieron**, no en el camino.
 Y las tres contestaron bien lo que se preguntaba: **no hubo comentarios de revisión**
 (verificado: `reviews: 0`, `comments: 0`).
 
-> Esto fija el listón para la rama B: **A resuelve la tarea con una llamada y sin dudar.**
-> Para que el MCP aporte algo tendrá que igualar eso, porque mejorarlo es difícil.
+> **A resuelve la tarea con una llamada y sin dudar.** Ese era el listón, y el MCP no lo
+> igualó: le costó cuatro llamadas y dos desbordamientos de tamaño.
 
 ---
 
-### Hallazgo **no pre-registrado**: la ruta era idéntica, las respuestas no
-
-Esto **no estaba en el diseño** y por tanto **no puede usarse para comparar A con B**. Se
-registra porque es más interesante que lo que sí se pre-registró.
-
-Las tres pasadas ejecutaron prácticamente el mismo comando sobre el mismo objeto. Al
-verificar sus respuestas contra la fuente:
-
-| | Afirmación | Real | |
-|---|---|---|---|
-| A1 | 30 commits | 30 | ✅ |
-| A2 | 28 commits | 30 | ❌ |
-| A3 | No dio ninguna cifra de commits | — | — |
-
-Y una segunda, del mismo tipo, en A1: al resumir el experimento 01 afirmó *"6/6 sin skill,
-**0/6 correcto con skill**"*. Ese `0/6` **no existe en ningún sitio**. Es una cifra
-inventada, presentada con la misma seguridad que la correcta que da dos líneas antes.
-
-> **Misma herramienta, misma llamada, mismos datos: 2 de 3 metieron una cifra falsa.** El
-> error no está en el acceso a la información. Está en el paso de resumirla.
+### Dónde falla el número, en las diez pasadas
 
 Enlaza con lo medido en el [experimento 01](01-convenciones-pipeline.md), donde una skill
 subió la cobertura del README al 100 % y creó afirmaciones falsas que antes no existían, y
 con el [03](03-bajar-al-codigo.md), que existe justamente porque un recuento escrito a mano
 se desvía del real.
 
-**Lo que este hallazgo *no* autoriza a concluir:** que el MCP mejore o empeore eso. No es
-lo que se está midiendo, n=3, y no estaba pre-registrado. Lo que sí deja es una pregunta
-con forma de experimento propio: **¿el camino de acceso cambia la fidelidad del resumen, o
-es independiente de él?**
+**Lo que este hallazgo *no* autoriza a concluir:** que usar un MCP reduzca los errores. La
+comparación no estaba pre-registrada, n es pequeño, y el 5/7 frente a 1/3 puede deberse a
+la tarea. Lo que sí deja es una pregunta con forma de experimento propio y una hipótesis
+que apuntar antes de medirla:
+
+> **¿Falla el número que el agente calcula y acierta el que le sirven?** Las diez pasadas
+> son compatibles con eso, incluida la única fallida de la rama B, que acertó el total
+> servido y erró el desglose que contó ella misma.
 
 ---
 
-## Qué aprendimos (con A y B; C sigue abierta)
+## Qué aprendimos
 
 **1. La hipótesis falló, y falló hacia el lado incómodo.** Se pre-registró que el coste
 sería *"mucho menor de lo que dice la teoría"*. Son 647 caracteres permanentes por
@@ -415,6 +479,21 @@ que yo esperaba, con tres pasadas respaldándola y sin ningún MCP de por medio.
 
 > **El resultado que confirma lo que esperabas es el que menos veces se comprueba.**
 
+**7. Un CLI ya autenticado no protege de nada.** La idea que este experimento iba a
+confirmar —*"si ya tienes `gh`, el MCP de GitHub sobra"*— **es falsa en la parte que
+importa**: con las dos rutas delante y ninguna instrucción, el agente fue al MCP **3 de 3**.
+
+Sigue siendo cierto que no aportó capacidad nueva. Lo que no es cierto es que por eso se
+quede sin usar.
+
+> **Instalar un MCP que se solapa con una herramienta que ya tienes no añade una opción:
+> sustituye la que usabas.** Y lo hace en silencio, porque nadie eligió.
+
+**8. El coste del solapamiento se paga en volumen, no en aciertos.** Cuatro llamadas frente
+a una, y dos respuestas de 161.848 caracteres que hubo que volcar a fichero y procesar
+aparte. La herramienta específica trae todo; la genérica te obliga a pedir lo que quieres —
+y pedir lo que quieres resultó ser más barato.
+
 > **El peaje se cobra en todas las sesiones. El beneficio, en ninguna.** Ese es el caso
 > completo contra una capacidad instalada y no usada — y no hacía falta ninguna pasada
 > nueva para medirlo.
@@ -431,8 +510,14 @@ que yo esperaba, con tres pasadas respaldándola y sin ningún MCP de por medio.
   mirar.**
 - **La medida B es correlacional.** Que no se invocara en 26 sesiones de trabajo con datos
   no prueba que no sirva; prueba que en ese trabajo no aportó.
-- **Sin la medida C no hay conclusión sobre solapamiento**, que es el caso más caro y el
-  más frecuente en la práctica.
+- **La medida C usó una tarea de solo lectura.** No dice nada de tareas que escriben, donde
+  el reparto entre `gh` y MCP puede ser otro — y donde un error cuesta más que una cifra.
+- **`n=3` por rama detecta que la elección es unánime, no matices.** Basta para afirmar que
+  el agente no duda; no basta para cuantificar cuánto contexto cuesta de más.
+- **Y el resultado de C se sostiene sobre un solo servidor y una sola tarea.** Que aquí el
+  MCP ganara la elección 3/3 no dice que la gane siempre: dice que **tener el CLI
+  autenticado no basta para que se prefiera el CLI**, que era la creencia que se iba a
+  medir.
 
 ---
 

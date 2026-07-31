@@ -32,12 +32,12 @@ Es importante decir qué está probado y qué no, porque la tesis es fácil de s
 | **Cómo está redactada** cambia el resultado más que el contenido: 0/3 → 3/3 | [Exp 02](experimentos/02-criterio-vs-lista.md) |
 | Un punto que la skill no sostenía, **resuelto en 10 líneas de test** | [Exp 03](experimentos/03-bajar-al-codigo.md) |
 | Un servidor MCP conectado y no usado: **647 caracteres siempre, 0 invocaciones en 26 sesiones** | [Exp 04](experimentos/04-coste-de-un-mcp.md) |
+| Con `gh` autenticado y el MCP de GitHub delante, **el agente eligió el MCP 3/3** | [Exp 04](experimentos/04-coste-de-un-mcp.md) |
 
-**Lo que no:** sigue sin medirse qué pasa cuando un MCP **se solapa** con una herramienta
-que el agente ya tiene. Se intentó y **la medición se anuló**: el servidor había quedado
-instalado en otro directorio —`claude mcp add` guarda por carpeta—, así que la rama "con
-MCP" era la rama "sin MCP" disfrazada. Hasta que tenga número se enuncia como razonamiento,
-no como resultado. Este material distingue las dos cosas siempre.
+**Lo que no:** el solapamiento se midió con **una sola tarea, de solo lectura, y un solo
+servidor**. Que ahí el MCP ganara la elección 3/3 no dice que la gane siempre. Y hubo que
+anular tres intentos antes de conseguir una medición válida, todos por lo mismo: el
+servidor estaba bien y la sesión no lo veía.
 
 ---
 
@@ -105,9 +105,16 @@ Si ya hay un CLI que lo hace y el agente puede ejecutarlo, el MCP **añade conte
 añadir capacidad**. Si en cambio permite algo que no era posible —ver el DOM de una
 aplicación corriendo, por ejemplo— eso es capacidad nueva y se paga con gusto.
 
-*(Medido: el peaje y la ausencia de uso. **Todavía razonamiento:** que el solapamiento con
-un CLI empeore el resultado. Es la medida C del [exp 04](experimentos/04-coste-de-un-mcp.md),
-pre-registrada y pendiente.)*
+Pero cuidado con la conclusión fácil, porque **se midió y salió al revés**
+([exp 04](experimentos/04-coste-de-un-mcp.md)). Con `gh` autenticado en el PATH y el MCP de
+GitHub cargado, sin ninguna instrucción sobre cuál usar, el agente fue al MCP **3 de 3**.
+
+> **Tener ya la herramienta no protege de instalar la que se solapa: la sustituye.** Y sin
+> que nadie lo decida, porque la elección no es tuya, es suya.
+
+Así que *"añade contexto sin añadir capacidad"* sigue siendo cierto y **no basta como
+argumento para dejarlo instalado sin más**. Si no aporta capacidad, quítalo; si lo dejas,
+asume que va a ser el camino por defecto.
 
 Y una advertencia práctica que salió de la misma medición: **no audites esto con la lista
 de servidores conectados.** Declaraba cinco que no aportaban ninguna herramienta a la
