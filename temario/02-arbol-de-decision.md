@@ -109,6 +109,9 @@ No es cero, y este es el matiz que casi nunca se explica. Una skill inútil:
 > **Una skill que no se dispara nunca es peor que no tenerla.** Está en tu cabeza y
 > no en la del agente.
 
+El caso completo —incluido el coste que solo se ve midiendo el "antes"— está en el
+[capítulo 05](05-cuando-no-escribir-una-skill.md).
+
 ---
 
 ## Bajar un escalón: cuando la skill no llega
