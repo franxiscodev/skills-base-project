@@ -200,6 +200,10 @@ un test que compare la traza documentada en el README con la salida real del
 pipeline.** No gasta contexto, no depende de que nadie se acuerde y falla solo. La
 skill se queda —sube el techo—; el test pone el suelo.
 
+**Hecho:** [experimento 03](03-bajar-al-codigo.md). El test se validó contra los
+dieciocho diffs guardados, sin generar ninguna pasada nueva: caza 6 de 6 fallos y no
+da un solo falso positivo en las 12 ejecuciones correctas.
+
 ## Condiciones y reproducibilidad
 
 - **Fecha:** 31 de julio de 2026
