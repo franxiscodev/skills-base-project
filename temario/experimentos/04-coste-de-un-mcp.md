@@ -229,8 +229,59 @@ La única invocación real del proyecto entero está en una sesión del 29 de ju
 
 ### Medida C — El caso solapado
 
-**Pendiente.** Requiere instalar el MCP de GitHub, que no está en esta máquina. No se
-rellena con razonamiento.
+**Rama A cerrada** (sin MCP). Rama B pendiente de instalar el servidor.
+
+Condiciones: sesión limpia · 31 de julio de 2026 · commit `6e98ee7` · prompt del
+[guion](04-guion-medida-c.md), sin nombrar ninguna herramienta.
+
+| Pasada | ¿Termina bien? | Ruta elegida | Llamadas |
+|---|---|---|---|
+| A1 | Sí | `gh pr view 1 --json title,body,state,reviews,commits` | 1 |
+| A2 | Sí | `gh pr view 1 --json title,body,commits,reviews,comments` | 1 |
+| A3 | Sí | `gh pr view 1 --json title,body,files,reviews,author,mergedBy,state` | 1 |
+
+**Ruta: 3/3 idéntica.** Las tres eligieron `gh pr view 1 --json`, una sola llamada, sin
+tantear antes con otra cosa. Ni una miró `git log`, ni la web, ni preguntó. La variación
+entre pasadas está solo en **qué campos pidieron**, no en el camino.
+
+Y las tres contestaron bien lo que se preguntaba: **no hubo comentarios de revisión**
+(verificado: `reviews: 0`, `comments: 0`).
+
+> Esto fija el listón para la rama B: **A resuelve la tarea con una llamada y sin dudar.**
+> Para que el MCP aporte algo tendrá que igualar eso, porque mejorarlo es difícil.
+
+---
+
+### Hallazgo **no pre-registrado**: la ruta era idéntica, las respuestas no
+
+Esto **no estaba en el diseño** y por tanto **no puede usarse para comparar A con B**. Se
+registra porque es más interesante que lo que sí se pre-registró.
+
+Las tres pasadas ejecutaron prácticamente el mismo comando sobre el mismo objeto. Al
+verificar sus respuestas contra la fuente:
+
+| | Afirmación | Real | |
+|---|---|---|---|
+| A1 | 30 commits | 30 | ✅ |
+| A2 | 28 commits | 30 | ❌ |
+| A3 | No dio ninguna cifra de commits | — | — |
+
+Y una segunda, del mismo tipo, en A1: al resumir el experimento 01 afirmó *"6/6 sin skill,
+**0/6 correcto con skill**"*. Ese `0/6` **no existe en ningún sitio**. Es una cifra
+inventada, presentada con la misma seguridad que la correcta que da dos líneas antes.
+
+> **Misma herramienta, misma llamada, mismos datos: 2 de 3 metieron una cifra falsa.** El
+> error no está en el acceso a la información. Está en el paso de resumirla.
+
+Enlaza con lo medido en el [experimento 01](01-convenciones-pipeline.md), donde una skill
+subió la cobertura del README al 100 % y creó afirmaciones falsas que antes no existían, y
+con el [03](03-bajar-al-codigo.md), que existe justamente porque un recuento escrito a mano
+se desvía del real.
+
+**Lo que este hallazgo *no* autoriza a concluir:** que el MCP mejore o empeore eso. No es
+lo que se está midiendo, n=3, y no estaba pre-registrado. Lo que sí deja es una pregunta
+con forma de experimento propio: **¿el camino de acceso cambia la fidelidad del resumen, o
+es independiente de él?**
 
 ---
 
