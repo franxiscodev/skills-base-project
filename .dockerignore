@@ -1,0 +1,15 @@
+# Cuanto menos entra en el contexto de build, más rápida y más pequeña la imagen.
+.git/
+.venv/
+__pycache__/
+.pytest_cache/
+*.egg-info/
+
+# Los datos se generan dentro del contenedor; copiarlos sería arrastrar basura.
+datos/
+
+# Material privado de trabajo: no debe entrar en ninguna imagen.
+bases/
+
+.claude/
+README.md

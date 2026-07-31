@@ -1,7 +1,7 @@
 # base-project — Aprendiendo Skills y MCP en Claude Code
 
-Repositorio de aprendizaje. El código que contiene (un visualizador de precios de
-Bitcoin y Ethereum) es la **excusa**: el objetivo real es entender dos formas de
+Repositorio de aprendizaje. El código que contiene (un pipeline de datos con
+DuckDB) es el **terreno de práctica**: el objetivo real es entender dos formas de
 extender Claude Code.
 
 | Mecanismo | Qué aporta | Vive en |
@@ -13,59 +13,120 @@ La diferencia en una frase: una skill es **conocimiento** (instrucciones que Cla
 lee), un MCP es **una herramienta** (algo que Claude ejecuta y que le devuelve datos
 que no tenía).
 
+> **El material didáctico está en [`temario/`](temario/)**: siete capítulos de criterio
+> y los experimentos que lo sostienen, con las salidas reales de cada pasada. Este
+> README explica **qué hay en el repo**; el temario explica **cómo se decidió**.
+>
+> Si vas con prisa: [el árbol de decisión](temario/02-arbol-de-decision.md) y
+> [cuándo **no** escribir una skill](temario/05-cuando-no-escribir-una-skill.md).
+
 ---
 
 ## El proyecto de ejemplo
 
-Un script de consola que consulta la API pública de
-[CoinGecko](https://www.coingecko.com/en/api) y muestra el precio en euros de Bitcoin
-y Ethereum con su variación en 24 horas.
+Un **mini-pipeline de datos**: genera un CSV de ventas, lo limpia con
+[DuckDB](https://duckdb.org/), calcula unas métricas y emite un informe en Markdown.
+
+```text
+generar → cargar → limpiar → métricas → informe
+```
+
+### Por qué los datos vienen sucios a propósito
+
+Esta es la parte que importa. `generar_datos.py` fabrica el CSV **con los defectos
+de cualquier extracción real**:
+
+| Defecto | La decisión que obliga a tomar |
+|---|---|
+| Fechas en `dd/mm/aaaa`, `aaaa-mm-dd` y `dd-mm-aaaa` | Normalizar a ISO, y qué hacer con lo que no parsea |
+| Importes con coma y con punto decimal | Un único criterio de conversión numérica |
+| Espacios sobrantes y mayúsculas inconsistentes | Normalizar antes de agrupar, o los grupos salen partidos |
+| Filas duplicadas exactas | Deduplicar, y decidir por qué clave |
+| Ciudad e importe ausentes | Qué se imputa, qué se descarta y qué se registra |
+| Cantidades negativas (devoluciones) | Si restan del total o se cuentan aparte |
+| Ventas con importe cero | Si son una venta o un apunte que no mueve dinero |
+
+Cada uno de esos defectos se resuelve **siempre de la misma manera**. Y ahí está el
+enlace con el resto del repositorio: una decisión que se repite igual cada vez es
+justo lo que justifica escribir una skill en vez de explicárselo al agente otra vez.
+
+Todo eso vive en [`src/pipeline/limpiar.py`](src/pipeline/limpiar.py), una función
+por regla, con su test al lado.
 
 ### Ejecutarlo
 
-Necesitas **Node.js 18 o superior** (usa `fetch` nativo). No hay dependencias que
-instalar ni API key que configurar:
+Necesitas **Python 3.11+** y [uv](https://docs.astral.sh/uv/). Sin red, sin API
+keys y sin permisos de administrador: los datos se fabrican en local.
+
+`uv` se distribuye por PyPI, así que se instala como cualquier otro paquete —no
+hace falta descargar un binario ni pedir permisos:
 
 ```bash
-npm start
-# o directamente
-node index.js
+pip install uv
 ```
 
-### Salida
+Y luego:
 
-```
-Precios de criptomonedas — fuente: CoinGecko
-
-┌─────────┬──────────────────┬───────────────┬────────────────┬──────────────────┬───────────┐
-│ (index) │ Criptomoneda     │ Precio (EUR)  │ Cambio 24h (%) │ Cambio 24h (EUR) │ Tendencia │
-├─────────┼──────────────────┼───────────────┼────────────────┼──────────────────┼───────────┤
-│ 0       │ 'Bitcoin (BTC)'  │ '56.394,00 €' │ '+1.07 %'      │ '595,42 €'       │ '▲ sube'  │
-│ 1       │ 'Ethereum (ETH)' │ '1671,00 €'   │ '+0.50 %'      │ '8,37 €'         │ '▲ sube'  │
-└─────────┴──────────────────┴───────────────┴────────────────┴──────────────────┴───────────┘
-Variación en las últimas 24 horas:
-  ▲ sube  Bitcoin (BTC)    +1.07 %
-  ▲ sube  Ethereum (ETH)   +0.50 %
+```bash
+uv sync                    # crea el entorno e instala las dependencias
+uv run python -m pipeline  # ejecuta el pipeline
 ```
 
-Todo vive en un único archivo, [`index.js`](index.js): construcción de la URL, la
-petición, el formateo con `Intl.NumberFormat` y el render con `console.table`.
+`uv run` usa el entorno del proyecto sin que haya que activarlo a mano. Si tienes
+`VIRTUAL_ENV` apuntando a otro sitio, `uv` avisa y usa el correcto.
 
-Si ves un error `429`, has superado el límite de peticiones de CoinGecko: espera un
-minuto. El script lo detecta y lo explica en vez de soltar el error crudo.
+Sale el informe en `datos/salida/informe.md` y un resumen por consola:
 
-### Estado: congelado a propósito
+```text
+Procesado
+  cargar: 510 filas, sin descartes
+  deduplicar: 510 → 500 (10 descartadas — filas idénticas en todas sus columnas)
+  normalizar_texto: 500 filas, sin descartes
+  convertir_tipos: 500 → 490 (10 descartadas — fecha, importe o cantidad ilegibles)
+  descartar_importe_cero: 490 → 481 (9 descartadas — importe exactamente cero)
+  imputar_ciudad: 481 filas, sin descartes
+  marcar_devoluciones: 481 filas, sin descartes
 
-**Este código no se va a seguir desarrollando.** No le faltan features por descuido —
-es que nunca fue el objetivo.
+Resultado
+  Ventas ........... 472
+  Devoluciones ..... 9
+  Importe neto ..... 464.787,85 €
+```
 
-Existe para tener *algo real* sobre lo que practicar: cambios que commitear con
-Conventional Commits, un historial donde ver el resultado, un contexto donde las
-skills se disparen de verdad. Un repositorio vacío no sirve para aprender un flujo
-de trabajo de Git.
+**El pipeline dice siempre qué descartó y por qué.** Un total de facturación sin
+saber cuántas filas se quedaron fuera es un número que no se puede auditar.
 
-Así que no busques aquí tests, arquitectura por capas ni configuración: lo interesante
-está en [`.claude/skills/`](.claude/skills/) y en el resto de este README.
+Los tests:
+
+```bash
+uv run pytest
+```
+
+Y con Docker, si prefieres no instalar nada:
+
+```bash
+docker compose run --rm pipeline
+```
+
+### Es reproducible, y eso no es un detalle
+
+El generador usa una semilla fija: **dos ejecuciones producen exactamente el mismo
+CSV**. Sin eso no se puede escribir un test sobre los datos, ni repetir una demo, ni
+comparar el informe de ayer con el de hoy.
+
+```bash
+uv run python -m pipeline --solo-generar
+```
+
+### Estado: es el terreno, no el objetivo
+
+Este pipeline no aspira a crecer. Existe para tener *algo real* sobre lo que
+practicar: cambios que commitear con Conventional Commits, un historial donde ver el
+resultado, y un contexto donde las skills se disparen de verdad. Un repositorio
+vacío no sirve para aprender un flujo de trabajo.
+
+Lo interesante está en [`.claude/skills/`](.claude/skills/) y en el resto de este
+README.
 
 ---
 
@@ -140,7 +201,7 @@ Los referencias se enlazan con Markdown normal desde el `SKILL.md`:
 Ver [references/recuperacion.md](references/recuperacion.md) para el procedimiento.
 ```
 
-### Las dos skills de este repo
+### Las tres skills de este repo
 
 Están **deliberadamente separadas** por responsabilidad, y se aplican a la vez:
 
@@ -157,6 +218,22 @@ Organizada en checkpoints, que es lo que la hace utilizable:
 - **Checkpoint A** — antes de commitear: ¿en qué branch estoy? ¿debería ramificar?
 - **Checkpoint B** — commit en la branch equivocada: cómo recuperarlo
 - **Checkpoint C** — antes de push: origen, destino, commits exactos, confirmación
+
+#### `pipeline-reglas-de-limpieza` — lo que el código **no** puede enseñar
+
+La única que se escribió **después de medir si hacía falta**, y la más interesante
+por lo que **no** dice: no describe cómo se escribe una regla —firma, `Recuento`,
+encadenado, test—, porque se comprobó que el código ya lo enseña solo. Seis intentos
+con dos modelos distintos, seis aciertos.
+
+Cubre únicamente los tres puntos donde sí hubo fallos: qué otros ficheros hay que
+actualizar, el test del caso que **no** debe verse afectado, y avisar cuando los
+datos de muestra no ejercitan la regla nueva.
+
+El experimento completo, con las salidas reales, está en
+[`temario/experimentos/01-convenciones-pipeline.md`](temario/experimentos/01-convenciones-pipeline.md).
+
+> **Escribir bien el código es la forma más barata de no necesitar una skill.**
 
 ### Lecciones aprendidas al escribirlas
 
@@ -328,15 +405,31 @@ base-project/
 │       ├── git-conventional-commits/
 │       │   ├── SKILL.md
 │       │   └── references/comandos.md
-│       └── github-workflow/
-│           ├── SKILL.md
-│           └── references/
-│               ├── gh-cli.md
-│               ├── pull-requests.md
-│               ├── releases-y-tags.md
-│               └── recuperacion.md
-├── bases/
-│   └── git_conventional_commits_skill_plan.md
+│       ├── github-workflow/
+│       │   ├── SKILL.md
+│       │   └── references/
+│       │       ├── gh-cli.md
+│       │       ├── pull-requests.md
+│       │       ├── releases-y-tags.md
+│       │       └── recuperacion.md
+│       └── pipeline-reglas-de-limpieza/
+│           └── SKILL.md    ← la única escrita después de medir
+├── temario/                ← el material didáctico: criterio y mediciones
+│   ├── 00-la-tesis.md … 06-conversacion-nueva.md
+│   ├── anexo-volatil.md    ← lo que caduca, separado a propósito
+│   └── experimentos/       ← el método y las mediciones, con salidas reales
+├── src/pipeline/
+│   ├── generar_datos.py    ← fabrica el CSV sucio, con semilla fija
+│   ├── cargar.py           ← DuckDB lee el CSV: todo como texto, a propósito
+│   ├── limpiar.py          ← una regla por función. El corazón del ejercicio
+│   ├── metricas.py
+│   ├── informe.py
+│   ├── recuento.py         ← trazabilidad de lo que se descarta
+│   └── __main__.py
+├── tests/
+├── datos/                  ← generado, fuera de git
+├── Dockerfile · compose.yaml
+├── pyproject.toml · uv.lock
 ├── .gitignore
 └── README.md
 ```
@@ -348,6 +441,13 @@ proyecto, la capacidad de leer documentación es tuya.
 ## Comandos de referencia
 
 ```bash
+# El pipeline
+uv sync                               # instala dependencias
+uv run python -m pipeline             # ejecuta el pipeline completo
+uv run python -m pipeline --solo-generar   # solo fabrica el CSV
+uv run pytest                         # tests
+docker compose run --rm pipeline      # sin instalar nada en local
+
 # Skills — no hay CLI: se crean como archivos en .claude/skills/
 # Se activan solas por la description, o a mano como slash command:
 #   /git-conventional-commits
