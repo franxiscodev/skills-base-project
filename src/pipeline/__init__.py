@@ -1,6 +1,6 @@
 """Mini-pipeline de datos con DuckDB.
 
-Cuatro pasos, uno por módulo:
+Un paso por módulo, en este orden:
 
     generar_datos  →  cargar  →  limpiar  →  metricas  →  informe
 
