@@ -9,10 +9,9 @@ El orden importa y no es arbitrario:
 1. `deduplicar`   — antes de nada, para no arrastrar trabajo inútil.
 2. `normalizar_texto` — antes de agrupar: "  MADRID " y "Madrid" son la misma ciudad,
    y si se agrupa antes de normalizar salen dos filas donde hay una.
-3. `convertir_tipos`  — convierte y valida, descarta lo irrecuperable.
-4. `descartar_importe_cero` — descarta ventas sin dinero.
-5. `imputar_ciudad`   — después de convertir, sobre las filas que sobreviven.
-6. `marcar_devoluciones` — clasifica, no elimina.
+3. `convertir_tipos`  — la única función que descarta filas.
+4. `imputar_ciudad`   — después de convertir, sobre las filas que sobreviven.
+5. `marcar_devoluciones` — clasifica, no elimina.
 
 Los nombres de tabla se interpolan en el SQL porque son constantes de este módulo,
 nunca entrada externa. Los **valores** siempre van como parámetros.
@@ -146,32 +145,6 @@ def convertir_tipos(
     )
 
 
-def descartar_importe_cero(
-    con: duckdb.DuckDBPyConnection, origen: str, destino: str
-) -> Recuento:
-    """Descarta filas con importe exactamente cero.
-
-    Una venta sin dinero es un registro anómalo: no genera facturación ni es una
-    devolución (que tiene cantidad negativa). No tiene valor de negocio.
-    """
-    antes = _contar(con, origen)
-    con.execute(
-        f"""
-        CREATE OR REPLACE TABLE {destino} AS
-        SELECT * FROM {origen}
-        WHERE importe != 0
-        """
-    )
-    despues = _contar(con, destino)
-
-    return Recuento(
-        paso="descartar_importe_cero",
-        entrantes=antes,
-        salientes=despues,
-        motivo="importe exactamente cero",
-    )
-
-
 def imputar_ciudad(
     con: duckdb.DuckDBPyConnection, origen: str, destino: str
 ) -> Recuento:
@@ -232,13 +205,12 @@ def marcar_devoluciones(
 
 
 def limpiar(con: duckdb.DuckDBPyConnection, origen: str) -> tuple[str, list[Recuento]]:
-    """Encadena las seis reglas y devuelve la tabla final con sus recuentos."""
+    """Encadena las cinco reglas y devuelve la tabla final con sus recuentos."""
     pasos = [
         (deduplicar, "_paso1_dedup"),
         (normalizar_texto, "_paso2_texto"),
         (convertir_tipos, "_paso3_tipos"),
-        (descartar_importe_cero, "_paso4_importe"),
-        (imputar_ciudad, "_paso5_ciudad"),
+        (imputar_ciudad, "_paso4_ciudad"),
         (marcar_devoluciones, TABLA_LIMPIA),
     ]
 

@@ -97,24 +97,6 @@ def test_convertir_tipos_descarta_lo_ilegible(con, tabla_cruda):
     assert recuento.descartadas == 2
 
 
-def test_descartar_importe_cero_elimina_ventas_sin_dinero(con, tabla_cruda):
-    origen = tabla_cruda(
-        [
-            VENTA,
-            ("2", "15/03/2026", "Madrid", "Teclado", "1", "0"),
-            ("3", "15/03/2026", "Madrid", "Teclado", "1", "0.00"),
-        ]
-    )
-    limpiar.normalizar_texto(con, origen, "texto")
-    limpiar.convertir_tipos(con, "texto", "tipos")
-
-    recuento = limpiar.descartar_importe_cero(con, "tipos", "salida")
-
-    assert recuento.entrantes == 3
-    assert recuento.salientes == 1
-    assert recuento.descartadas == 2
-
-
 def test_imputar_ciudad_no_descarta_la_venta(con, tabla_cruda):
     """Una venta sin ciudad sigue siendo una venta: su importe es real."""
     origen = tabla_cruda(
@@ -141,7 +123,7 @@ def test_marcar_devoluciones_no_elimina_filas(con, tabla_cruda):
     assert marcas == [(False,), (True,)]
 
 
-def test_limpiar_encadena_las_seis_reglas(con, tabla_cruda):
+def test_limpiar_encadena_las_cinco_reglas(con, tabla_cruda):
     origen = tabla_cruda([VENTA, VENTA, ("2", "sin fecha", "  BILBAO ", "Ratón", "1", "15,50")])
 
     tabla, recuentos = limpiar.limpiar(con, origen)
@@ -151,7 +133,6 @@ def test_limpiar_encadena_las_seis_reglas(con, tabla_cruda):
         "deduplicar",
         "normalizar_texto",
         "convertir_tipos",
-        "descartar_importe_cero",
         "imputar_ciudad",
         "marcar_devoluciones",
     ]
