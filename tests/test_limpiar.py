@@ -97,6 +97,41 @@ def test_convertir_tipos_descarta_lo_ilegible(con, tabla_cruda):
     assert recuento.descartadas == 2
 
 
+def test_descartar_importe_cero_elimina_la_fila(con, tabla_cruda):
+    origen = tabla_cruda(
+        [VENTA, ("2", "15/03/2026", "Madrid", "Teclado", "1", "0.00")]
+    )
+    limpiar.convertir_tipos(con, origen, "tipos")
+
+    recuento = limpiar.descartar_importe_cero(con, "tipos", "salida")
+
+    assert recuento.entrantes == 2
+    assert recuento.salientes == 1
+    assert recuento.descartadas == 1
+
+
+def test_descartar_importe_cero_no_toca_lo_que_no_es_cero(con, tabla_cruda):
+    """El criterio es igualdad con cero, no "importe pequeño" ni `<= 0`.
+
+    Las dos filas están pegadas al límite y del lado que se queda: 0,01 € es lo
+    mínimo distinto de cero, y un importe negativo es dinero que se movió. Si
+    alguien ensancha la regla a `<= 0` o le mete un umbral, este test cae.
+    """
+    origen = tabla_cruda(
+        [
+            ("1", "15/03/2026", "Madrid", "Teclado", "1", "0,01"),
+            ("2", "15/03/2026", "Madrid", "Teclado", "1", "-29.90"),
+        ]
+    )
+    limpiar.convertir_tipos(con, origen, "tipos")
+
+    recuento = limpiar.descartar_importe_cero(con, "tipos", "salida")
+
+    assert recuento.descartadas == 0
+    importes = con.sql("SELECT importe FROM salida ORDER BY id_venta").fetchall()
+    assert importes == [(0.01,), (-29.90,)]
+
+
 def test_imputar_ciudad_no_descarta_la_venta(con, tabla_cruda):
     """Una venta sin ciudad sigue siendo una venta: su importe es real."""
     origen = tabla_cruda(
@@ -123,7 +158,7 @@ def test_marcar_devoluciones_no_elimina_filas(con, tabla_cruda):
     assert marcas == [(False,), (True,)]
 
 
-def test_limpiar_encadena_las_cinco_reglas(con, tabla_cruda):
+def test_limpiar_encadena_las_seis_reglas(con, tabla_cruda):
     origen = tabla_cruda([VENTA, VENTA, ("2", "sin fecha", "  BILBAO ", "Ratón", "1", "15,50")])
 
     tabla, recuentos = limpiar.limpiar(con, origen)
@@ -133,6 +168,7 @@ def test_limpiar_encadena_las_cinco_reglas(con, tabla_cruda):
         "deduplicar",
         "normalizar_texto",
         "convertir_tipos",
+        "descartar_importe_cero",
         "imputar_ciudad",
         "marcar_devoluciones",
     ]

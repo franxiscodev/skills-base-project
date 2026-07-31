@@ -37,6 +37,7 @@ de cualquier extracción real**:
 | Filas duplicadas exactas | Deduplicar, y decidir por qué clave |
 | Ciudad e importe ausentes | Qué se imputa, qué se descarta y qué se registra |
 | Cantidades negativas (devoluciones) | Si restan del total o se cuentan aparte |
+| Ventas con importe cero | Si son una venta o un apunte que no mueve dinero |
 
 Cada uno de esos defectos se resuelve **siempre de la misma manera**. Y ahí está el
 enlace con el resto del repositorio: una decisión que se repite igual cada vez es
@@ -75,13 +76,14 @@ Procesado
   deduplicar: 510 → 500 (10 descartadas — filas idénticas en todas sus columnas)
   normalizar_texto: 500 filas, sin descartes
   convertir_tipos: 500 → 490 (10 descartadas — fecha, importe o cantidad ilegibles)
-  imputar_ciudad: 490 filas, sin descartes
-  marcar_devoluciones: 490 filas, sin descartes
+  descartar_importe_cero: 490 → 481 (9 descartadas — importe exactamente cero)
+  imputar_ciudad: 481 filas, sin descartes
+  marcar_devoluciones: 481 filas, sin descartes
 
 Resultado
-  Ventas ........... 474
-  Devoluciones ..... 16
-  Importe neto ..... 478.537,35 €
+  Ventas ........... 472
+  Devoluciones ..... 9
+  Importe neto ..... 464.787,85 €
 ```
 
 **El pipeline dice siempre qué descartó y por qué.** Un total de facturación sin

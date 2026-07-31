@@ -14,6 +14,7 @@ siempre de la misma forma:
 - filas duplicadas exactas
 - valores ausentes en columnas opcionales y en alguna obligatoria
 - cantidades negativas (devoluciones mal codificadas)
+- ventas con importe cero, que no son un dato ausente sino un apunte sin dinero
 """
 
 from __future__ import annotations
@@ -77,6 +78,13 @@ def generar(destino: Path, filas: int = 500) -> Path:
             cantidad = -cantidad
 
         importe = round(PRECIOS[producto] * abs(cantidad), 2)
+
+        # Ventas fantasma: el sistema exporta el apunte con importe cero. No es un
+        # dato ausente —el campo viene relleno— así que la conversión de tipos las
+        # deja pasar y hay que decidir aparte qué se hace con ellas.
+        if rnd.random() < 0.02:
+            importe = 0.0
+
         dia = inicio + timedelta(days=rnd.randint(0, 180))
 
         fila = [

@@ -9,9 +9,14 @@ El orden importa y no es arbitrario:
 1. `deduplicar`   — antes de nada, para no arrastrar trabajo inútil.
 2. `normalizar_texto` — antes de agrupar: "  MADRID " y "Madrid" son la misma ciudad,
    y si se agrupa antes de normalizar salen dos filas donde hay una.
-3. `convertir_tipos`  — la única función que descarta filas.
-4. `imputar_ciudad`   — después de convertir, sobre las filas que sobreviven.
-5. `marcar_devoluciones` — clasifica, no elimina.
+3. `convertir_tipos`  — descarta lo que no se puede convertir.
+4. `descartar_importe_cero` — después de convertir, que es cuando el importe ya es
+   un número y se puede comparar con cero.
+5. `imputar_ciudad`   — después de descartar, sobre las filas que sobreviven.
+6. `marcar_devoluciones` — clasifica, no elimina.
+
+Descartan filas `deduplicar`, `convertir_tipos` y `descartar_importe_cero`; las otras
+tres reescriben o clasifican.
 
 Los nombres de tabla se interpolan en el SQL porque son constantes de este módulo,
 nunca entrada externa. Los **valores** siempre van como parámetros.
@@ -102,7 +107,7 @@ def normalizar_texto(
 def convertir_tipos(
     con: duckdb.DuckDBPyConnection, origen: str, destino: str
 ) -> Recuento:
-    """Convierte texto a fecha, entero y decimal. **Es el único paso que descarta.**
+    """Convierte texto a fecha, entero y decimal, y descarta lo que no encaja.
 
     Tres decisiones explícitas:
 
@@ -142,6 +147,38 @@ def convertir_tipos(
         entrantes=antes,
         salientes=despues,
         motivo="fecha, importe o cantidad ilegibles",
+    )
+
+
+def descartar_importe_cero(
+    con: duckdb.DuckDBPyConnection, origen: str, destino: str
+) -> Recuento:
+    """Elimina las ventas cuyo importe es exactamente cero.
+
+    Un importe de 0 no es una venta: es un apunte técnico del sistema de origen
+    —un ajuste, una línea anulada, un envío sin cargo—. Suma 0 al total, así que
+    dejarla no cambia la facturación, pero sí infla el número de ventas y el
+    recuento por ciudad y por producto. Se descarta y queda contada.
+
+    El criterio es **igualdad estricta con cero**, no `<= 0`, y esa diferencia
+    importa: una devolución se codifica con cantidad negativa e importe positivo,
+    pero un importe negativo real seguiría siendo dinero que se movió, y esta
+    regla no es quién para hacerlo desaparecer.
+
+    Va después de `convertir_tipos` porque hasta ahí el importe es texto: `"0,00"`
+    y `"0.00"` son cadenas distintas y ninguna se puede comparar con cero.
+    """
+    antes = _contar(con, origen)
+    con.execute(
+        f"CREATE OR REPLACE TABLE {destino} AS SELECT * FROM {origen} WHERE importe <> 0"
+    )
+    despues = _contar(con, destino)
+
+    return Recuento(
+        paso="descartar_importe_cero",
+        entrantes=antes,
+        salientes=despues,
+        motivo="importe exactamente cero",
     )
 
 
@@ -205,12 +242,13 @@ def marcar_devoluciones(
 
 
 def limpiar(con: duckdb.DuckDBPyConnection, origen: str) -> tuple[str, list[Recuento]]:
-    """Encadena las cinco reglas y devuelve la tabla final con sus recuentos."""
+    """Encadena las seis reglas y devuelve la tabla final con sus recuentos."""
     pasos = [
         (deduplicar, "_paso1_dedup"),
         (normalizar_texto, "_paso2_texto"),
         (convertir_tipos, "_paso3_tipos"),
-        (imputar_ciudad, "_paso4_ciudad"),
+        (descartar_importe_cero, "_paso4_cero"),
+        (imputar_ciudad, "_paso5_ciudad"),
         (marcar_devoluciones, TABLA_LIMPIA),
     ]
 
