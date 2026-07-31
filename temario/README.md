@@ -19,13 +19,13 @@ los resultados concretos dependen del modelo y de la versión de las herramienta
 | # | Capítulo | Estado |
 |---|---|---|
 | 00 | [La tesis: economía de contexto](00-la-tesis.md) | ✅ |
-| 01 | Los tres mecanismos de contexto | pendiente |
+| 01 | [Los tres mecanismos de contexto](01-tres-mecanismos.md) | ✅ |
 | 02 | [El árbol de decisión: dónde va cada cosa](02-arbol-de-decision.md) | ✅ |
 | 03 | [Anatomía de una skill](03-anatomia-de-una-skill.md) | ✅ |
 | 04 | [El frontmatter: lo que decide si tu skill existe](04-frontmatter.md) | ✅ |
 | 05 | [Cuándo **no** escribir una skill](05-cuando-no-escribir-una-skill.md) | ✅ |
 | 06 | Cuándo abrir una conversación nueva | pendiente |
-| — | [Anexo volátil](anexo-volatil.md) — rutas, flags y versiones | pendiente |
+| — | [Anexo volátil](anexo-volatil.md) — rutas, campos y versiones | ✅ |
 
 El **anexo volátil** existe a propósito: separa lo que caduca (nombres de fichero,
 flags, versiones) de lo que no (el criterio). Sin esa separación, el material entero
