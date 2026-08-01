@@ -144,6 +144,41 @@ El único método fiable, y el que no depende de ninguna interfaz:
 Las cabeceras se guardan **en claro** en la configuración. Un token de `gh` reutilizado con
 `$(gh auth token)` evita crear uno nuevo, pero queda escrito igual.
 
+### Context7, que es el que usa este repositorio
+
+Trae la documentación **actual** de una librería antes de contestar sobre ella, en vez de
+tirar de memoria. Resuelve el caso incómodo de la fecha de corte: el modelo no solo
+desconoce lo que cambió después, **tampoco sabe que no lo sabe**.
+
+```bash
+claude mcp add --transport http --scope user context7 https://mcp.context7.com/mcp
+```
+
+`--transport http` porque es un endpoint remoto y no hay que instalar nada; `--scope user`
+porque la documentación sirve en todos los proyectos.
+
+- **Sin API key funciona**, con límites más bajos. La gratuita está en
+  [context7.com/dashboard](https://context7.com/dashboard) y se pasa como
+  `--header "CONTEXT7_API_KEY: …"`.
+- **Una consulta = un concepto.** `"React useEffect cleanup"` funciona;
+  `"routing y auth y caching en Next.js"` no.
+- **Se puede pedir una versión concreta**, no solo la última: `/vercel/next.js/v14.3.0`.
+
+> ⚠️ **La instalación que recomienda su web es `npx ctx7@latest setup`**, que descarga y
+> ejecuta código, y además es interactiva —un agente no puede teclear en ella—. El comando
+> directo de arriba evita las dos cosas. Si aun así vas a ejecutar el `npx`, mira antes de
+> dónde viene:
+>
+> ```bash
+> npm view ctx7 description repository.url maintainers
+> ```
+
+**Dónde no aporta:** refactorizar tu código, depurar lógica de negocio, conceptos generales
+de programación, o librerías estables que llevan años sin cambiar. En este repositorio el
+resultado fue **0 invocaciones en 26 sesiones**
+([exp 04](experimentos/04-coste-de-un-mcp.md)) — que es justamente el caso que el capítulo
+07 enseña a detectar antes de instalarlo.
+
 ---
 
 ## `CLAUDE.md`

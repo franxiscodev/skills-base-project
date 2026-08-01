@@ -1,444 +1,122 @@
-# base-project — Aprendiendo Skills y MCP en Claude Code
+# base-project — economía de contexto en Claude Code
 
-Repositorio de aprendizaje. El código que contiene (un pipeline de datos con
-DuckDB) es el **terreno de práctica**: el objetivo real es entender dos formas de
-extender Claude Code.
+Casi todo lo que se publica sobre skills y MCP enseña a **añadir**: más servidores, más
+herramientas, más capacidades. Este repositorio hace lo contrario y lo hace midiendo.
 
-| Mecanismo | Qué aporta | Vive en |
-|---|---|---|
-| **Skills** | Le enseñan a Claude *cómo trabajas tú* | Este repo, `.claude/skills/` |
-| **MCP** | Le dan a Claude *capacidades nuevas* | Config global, `~/.claude.json` |
+> **La habilidad que importa no es saber usar skills y MCP. Es saber decidir qué merece
+> estar en la ventana de contexto.**
 
-La diferencia en una frase: una skill es **conocimiento** (instrucciones que Claude
-lee), un MCP es **una herramienta** (algo que Claude ejecuta y que le devuelve datos
-que no tenía).
+## Lo que se midió
 
-> **El material didáctico está en [`temario/`](temario/)**: los capítulos de criterio
-> y los experimentos que lo sostienen, con las salidas reales de cada pasada. Este
-> README explica **qué hay en el repo**; el temario explica **cómo se decidió**.
->
-> Si vas con prisa: [el árbol de decisión](temario/02-arbol-de-decision.md) y
-> [cuándo **no** escribir una skill](temario/05-cuando-no-escribir-una-skill.md).
+| Resultado | Dónde |
+|---|---|
+| La skill que íbamos a escribir **no hacía falta**: 6/6 sin ella, dos modelos | [Exp 01](temario/experimentos/01-convenciones-pipeline.md) |
+| Una skill **crea errores que antes no existían**: 0/6 → 3/6 afirmaciones falsas | [Exp 01](temario/experimentos/01-convenciones-pipeline.md) |
+| **Cómo está redactada** cambia el resultado más que el contenido: 0/3 → 3/3 | [Exp 02](temario/experimentos/02-criterio-vs-lista.md) |
+| Un punto que la skill no sostenía, **resuelto en 10 líneas de test** | [Exp 03](temario/experimentos/03-bajar-al-codigo.md) |
+| Un servidor MCP conectado y no usado: **647 caracteres siempre, 0 invocaciones en 26 sesiones** | [Exp 04](temario/experimentos/04-coste-de-un-mcp.md) |
+| Una skill propia, bien escrita y nunca cargada: **518 caracteres, 0 de 40 sesiones** | [Exp 05](temario/experimentos/05-la-skill-que-nunca-gana.md) |
+
+Cada experimento guarda las salidas reales de cada pasada en
+[`temario/experimentos/diffs/`](temario/experimentos/diffs/). Los que refutaron la
+hipótesis están publicados igual — son los únicos que nadie más te va a contar.
+
+## El método
+
+> **Primero se mide sin la skill. Después se decide si hace falta. Solo entonces se
+> escribe.**
+
+Suena obvio y casi nadie lo hace, porque exige el paso incómodo: probar **sin** la
+herramienta primero. Sin ese "antes", todo lo que instalas funciona — no tienes con qué
+compararlo. Las once reglas completas están en la
+[plantilla de experimento](temario/experimentos/PLANTILLA.md).
 
 ---
 
-## El proyecto de ejemplo
+## El material
 
-Un **mini-pipeline de datos**: genera un CSV de ventas, lo limpia con
-[DuckDB](https://duckdb.org/), calcula unas métricas y emite un informe en Markdown.
+Los **capítulos** dan el criterio; los **experimentos** dan la prueba. Están separados
+porque envejecen distinto.
+
+| # | Capítulo | Contesta |
+|---|---|---|
+| [00](temario/00-la-tesis.md) | La tesis | Por qué restar |
+| [01](temario/01-tres-mecanismos.md) | Los tres mecanismos de contexto | Qué hay disponible y qué cuesta cada uno |
+| [02](temario/02-arbol-de-decision.md) | El árbol de decisión | Dónde va cada cosa |
+| [03](temario/03-anatomia-de-una-skill.md) | Anatomía de una skill | Cómo se escribe para que funcione |
+| [04](temario/04-frontmatter.md) | El frontmatter | Qué decide si tu skill llega a pasar |
+| [05](temario/05-cuando-no-escribir-una-skill.md) | Cuándo **no** escribir una skill | Cuándo la respuesta es que no |
+| [06](temario/06-conversacion-nueva.md) | Cuándo abrir una conversación nueva | La misma tesis, dentro de la sesión |
+| [07](temario/07-instalar-una-capacidad.md) | Instalar una capacidad | Cuatro intentos, ningún error, tres mediciones perdidas |
+| — | [Anexo volátil](temario/anexo-volatil.md) | Rutas, campos, comandos y versiones — lo que caduca, con fecha |
+
+**Si solo vas a leer dos:** el [02](temario/02-arbol-de-decision.md) y el
+[05](temario/05-cuando-no-escribir-una-skill.md).
+
+---
+
+## El terreno de práctica
+
+Un **mini-pipeline de datos**: fabrica un CSV de ventas sucio, lo limpia con
+[DuckDB](https://duckdb.org/), calcula métricas y emite un informe.
 
 ```text
 generar → cargar → limpiar → métricas → informe
 ```
 
-### Por qué los datos vienen sucios a propósito
+Los datos vienen sucios **a propósito** —fechas en tres formatos, importes con coma y con
+punto, duplicados exactos, ciudades ausentes, devoluciones— porque cada defecto se
+resuelve siempre de la misma manera, y **una decisión que se repite igual cada vez es
+justo lo que justifica escribir una skill.** Sin un terreno así no hay nada que medir.
 
-Esta es la parte que importa. `generar_datos.py` fabrica el CSV **con los defectos
-de cualquier extracción real**:
-
-| Defecto | La decisión que obliga a tomar |
-|---|---|
-| Fechas en `dd/mm/aaaa`, `aaaa-mm-dd` y `dd-mm-aaaa` | Normalizar a ISO, y qué hacer con lo que no parsea |
-| Importes con coma y con punto decimal | Un único criterio de conversión numérica |
-| Espacios sobrantes y mayúsculas inconsistentes | Normalizar antes de agrupar, o los grupos salen partidos |
-| Filas duplicadas exactas | Deduplicar, y decidir por qué clave |
-| Ciudad e importe ausentes | Qué se imputa, qué se descarta y qué se registra |
-| Cantidades negativas (devoluciones) | Si restan del total o se cuentan aparte |
-| Ventas con importe cero | Si son una venta o un apunte que no mueve dinero |
-
-Cada uno de esos defectos se resuelve **siempre de la misma manera**. Y ahí está el
-enlace con el resto del repositorio: una decisión que se repite igual cada vez es
-justo lo que justifica escribir una skill en vez de explicárselo al agente otra vez.
-
-Todo eso vive en [`src/pipeline/limpiar.py`](src/pipeline/limpiar.py), una función
-por regla, con su test al lado.
+Todo eso vive en [`src/pipeline/limpiar.py`](src/pipeline/limpiar.py): una función por
+regla, con su test al lado.
 
 ### Ejecutarlo
 
-Necesitas **Python 3.11+** y [uv](https://docs.astral.sh/uv/). Sin red, sin API
-keys y sin permisos de administrador: los datos se fabrican en local.
-
-`uv` se distribuye por PyPI, así que se instala como cualquier otro paquete —no
-hace falta descargar un binario ni pedir permisos:
+Necesitas **Python 3.11+** y [uv](https://docs.astral.sh/uv/) (`pip install uv`). Sin red,
+sin API keys y sin permisos de administrador: los datos se fabrican en local.
 
 ```bash
-pip install uv
+uv sync                                    # entorno y dependencias
+uv run python -m pipeline                  # el pipeline completo
+uv run python -m pipeline --solo-generar   # solo fabrica el CSV
+uv run pytest                              # 21 tests
+docker compose run --rm pipeline           # sin instalar nada en local
 ```
 
-Y luego:
-
-```bash
-uv sync                    # crea el entorno e instala las dependencias
-uv run python -m pipeline  # ejecuta el pipeline
-```
-
-`uv run` usa el entorno del proyecto sin que haya que activarlo a mano. Si tienes
-`VIRTUAL_ENV` apuntando a otro sitio, `uv` avisa y usa el correcto.
-
-Sale el informe en `datos/salida/informe.md` y un resumen por consola:
+El informe sale en `datos/salida/informe.md`, y por consola el recuento de lo descartado:
 
 ```text
-Procesado
-  cargar: 510 filas, sin descartes
   deduplicar: 510 → 500 (10 descartadas — filas idénticas en todas sus columnas)
-  normalizar_texto: 500 filas, sin descartes
   convertir_tipos: 500 → 490 (10 descartadas — fecha, importe o cantidad ilegibles)
   descartar_importe_cero: 490 → 481 (9 descartadas — importe exactamente cero)
-  imputar_ciudad: 481 filas, sin descartes
-  marcar_devoluciones: 481 filas, sin descartes
-
-Resultado
-  Ventas ........... 472
-  Devoluciones ..... 9
-  Importe neto ..... 464.787,85 €
 ```
 
-**El pipeline dice siempre qué descartó y por qué.** Un total de facturación sin
-saber cuántas filas se quedaron fuera es un número que no se puede auditar.
+**El pipeline dice siempre qué descartó y por qué.** Un total de facturación sin saber
+cuántas filas se quedaron fuera es un número que no se puede auditar.
 
-Los tests:
-
-```bash
-uv run pytest
-```
-
-Y con Docker, si prefieres no instalar nada:
-
-```bash
-docker compose run --rm pipeline
-```
-
-### Es reproducible, y eso no es un detalle
-
-El generador usa una semilla fija: **dos ejecuciones producen exactamente el mismo
-CSV**. Sin eso no se puede escribir un test sobre los datos, ni repetir una demo, ni
-comparar el informe de ayer con el de hoy.
-
-```bash
-uv run python -m pipeline --solo-generar
-```
-
-### Estado: es el terreno, no el objetivo
-
-Este pipeline no aspira a crecer. Existe para tener *algo real* sobre lo que
-practicar: cambios que commitear con Conventional Commits, un historial donde ver el
-resultado, y un contexto donde las skills se disparen de verdad. Un repositorio
-vacío no sirve para aprender un flujo de trabajo.
-
-Lo interesante está en [`.claude/skills/`](.claude/skills/) y en el resto de este
-README.
+El generador usa **semilla fija**: dos ejecuciones producen el mismo CSV. Sin eso no se
+puede escribir un test sobre los datos, ni repetir una demo, ni comparar dos experimentos.
 
 ---
 
-## Parte 1 — Skills
+## Estructura
 
-### Qué es una skill
-
-Un archivo Markdown con instrucciones que Claude carga **solo cuando hacen falta**.
-No es un prompt que repites en cada sesión ni algo que tengas que invocar a mano:
-Claude lee la descripción, detecta que la tarea encaja y carga el contenido.
-
-El problema que resuelve: sin skills, o repites tus convenciones en cada conversación,
-o las metes en `CLAUDE.md` y ocupan contexto permanentemente aunque no toquen.
-
-### Anatomía
-
-```
-.claude/skills/
-├── git-conventional-commits/
-│   ├── SKILL.md                    ← se carga al activarse
-│   └── references/
-│       └── comandos.md             ← se carga solo si hace falta
-└── pipeline-reglas-de-limpieza/
-    └── SKILL.md
-```
-
-Cada skill es **una carpeta** con un `SKILL.md` obligatorio. El nombre de la carpeta
-es el nombre de la skill.
-
-### El frontmatter es lo que decide todo
-
-```yaml
----
-name: git-conventional-commits
-description: Flujo de trabajo Git con Conventional Commits — usar al crear commits,
-  ramas, sincronizar con el remoto o revisar el historial. Se activa con "commit",
-  "commitear", "crear rama", "branch", "push", "pull", "merge", "changelog".
----
-```
-
-Esta es **la parte más importante y la que más se subestima**. La `description` es
-lo único que Claude ve antes de decidir si carga la skill o no. Si está mal escrita,
-la skill existe pero nunca se activa.
-
-Lo que funciona:
-
-- Decir **cuándo** usarla, no solo qué es
-- Incluir los **disparadores literales** que dirías tú ("commitear", "subir cambios")
-- Cubrir sinónimos y las dos formas de decirlo: "rama" y "branch", "PR" y "pull request"
-- Escribirla en el idioma en el que vas a hablarle
-
-### Progressive disclosure
-
-El patrón de los tres niveles, que es lo que mantiene el contexto bajo control:
-
-1. **`description`** — siempre en contexto. Unas líneas.
-2. **`SKILL.md`** — se carga al activarse la skill.
-3. **`references/*.md`** — se cargan solo si Claude decide que los necesita.
-
-Por eso `git-conventional-commits` tiene el cheat sheet de comandos en un archivo
-aparte: casi siempre basta con el `SKILL.md`, y el resto no se paga.
-
-Los referencias se enlazan con Markdown normal desde el `SKILL.md`:
-
-```markdown
-Ver [references/recuperacion.md](references/recuperacion.md) para el procedimiento.
-```
-
-### Las skills de este repo
-
-Fueron tres. Son dos: la tercera se borró después de medir que no se disparaba nunca
-([exp 05](temario/experimentos/05-la-skill-que-nunca-gana.md)).
-
-#### `git-conventional-commits` — el *qué* dice el commit
-
-Formato del mensaje, los nueve tipos permitidos (`feat`, `fix`, `docs`, `style`,
-`refactor`, `perf`, `test`, `build`, `ci`, `chore`), imperativo y minúscula, scope,
-breaking changes con `!` y pie `BREAKING CHANGE:`.
-
-#### `pipeline-reglas-de-limpieza` — lo que el código **no** puede enseñar
-
-La única que se escribió **después de medir si hacía falta**, y la más interesante
-por lo que **no** dice: no describe cómo se escribe una regla —firma, `Recuento`,
-encadenado, test—, porque se comprobó que el código ya lo enseña solo. Seis intentos
-con dos modelos distintos, seis aciertos.
-
-Cubre únicamente los tres puntos donde sí hubo fallos: qué otros ficheros hay que
-actualizar, el test del caso que **no** debe verse afectado, y avisar cuando los
-datos de muestra no ejercitan la regla nueva.
-
-El experimento completo, con las salidas reales, está en
-[`temario/experimentos/01-convenciones-pipeline.md`](temario/experimentos/01-convenciones-pipeline.md).
-
-> **Escribir bien el código es la forma más barata de no necesitar una skill.**
-
-### Lecciones aprendidas al escribirlas
-
-**Separar responsabilidades no basta, y esto se midió.** Partimos Git en dos skills
-—el mensaje por un lado, el flujo de trabajo por otro— y cada `SKILL.md` remitía al
-otro explícitamente. Sobre 40 sesiones reales, una se cargó 5 veces y la otra **0**.
-
-> **La frontera entre dos skills solo existe si está en las `description`.** Escribirla
-> en el cuerpo es documentarla para un lector que no llega, porque el cuerpo no se lee
-> si la `description` no gana.
-
-**Hay que escribir las excepciones, no solo las reglas.** La skill borrada dedicaba una
-sección entera a *cuándo NO avisar* de que estás en `main`:
-
-> Avisar cuando no toca convierte la regla en ruido y hace que se ignore siempre.
-
-Sin eso, la skill avisaría en el commit raíz de un repo nuevo o al tocar el README de
-un proyecto personal — y acabarías ignorándola.
-
-**Documentar los límites reales del agente.** Claude no puede escribir en un prompt
-interactivo (passphrase de SSH, `gh auth login`, `git rebase -i`). Y el fallo es
-engañoso: una passphrase no introducida aparece como `Permission denied (publickey)`,
-que parece un problema de claves. La skill lo recogía y mandaba comprobar `ssh-add -l`
-antes, para pasarte el comando en vez de intentarlo y fallar — y **nunca llegó a
-leerse**, que es exactamente el problema de poner algo valioso donde no se activa.
-
-**Poner reglas no negociables explícitas.** Nunca `--force` sobre branch compartida,
-nunca commitear una feature en `main`, siempre revisar el diff buscando secretos.
-
----
-
-## Parte 2 — MCP (Context7)
-
-### Qué es MCP
-
-**Model Context Protocol**: un estándar para conectar Claude a herramientas y fuentes
-de datos externas. Cada servidor MCP expone tools que Claude puede llamar.
-
-### Qué resuelve Context7, en simple
-
-Claude tiene una fecha de corte de conocimiento. Todo lo que una librería cambió
-después de esa fecha, no lo sabe — pero **tampoco sabe que no lo sabe**, así que
-puede responderte con total seguridad usando una API que ya no existe.
-
-Context7 resuelve eso: antes de contestar sobre una librería, va a buscar su
-documentación oficial **actual** y responde con eso. En lugar de tirar de memoria,
-lee la fuente.
-
-En la prueba con React se ve el mecanismo: primero resolvió `React` →
-`/reactjs/react.dev`, y luego los ejemplos salieron de los archivos reales de
-react.dev, no de su memoria.
-
-### Instalación
-
-```bash
-claude mcp add --transport http --scope user context7 https://mcp.context7.com/mcp
-```
-
-Desglose de la decisión:
-
-| Parte | Por qué |
-|---|---|
-| `--transport http` | Context7 ofrece endpoint HTTP remoto: no hay que instalar nada en local |
-| `--scope user` | Documentación general → útil en todos los proyectos |
-| `context7` | Nombre local del servidor |
-
-#### Los tres scopes
-
-| Scope | Dónde se guarda | Cuándo |
-|---|---|---|
-| `user` | `~/.claude.json` | Vale para todos tus proyectos |
-| `project` | `.mcp.json` en el repo (se commitea) | El equipo entero lo necesita |
-| `local` | Config del proyecto, sin commitear | Solo tú, solo aquí |
-
-#### Verificar
-
-```bash
-claude mcp list          # todos los servidores y su estado
-claude mcp get context7  # detalle de uno
-```
-
-```
-context7:
-  Scope: User config (available in all your projects)
-  Status: √ Connected
-  Type: http
-```
-
-### Las dos tools que expone
-
-| Tool | Función |
-|---|---|
-| `resolve-library-id` | Traduce un nombre ("React") al ID de Context7 (`/reactjs/react.dev`) |
-| `query-docs` | Trae documentación de esa librería sobre un tema concreto |
-
-Siempre en ese orden: primero resolver el ID, luego consultar.
-
-### Uso
-
-No hace falta invocarlo explícitamente — Claude lo usa cuando detecta una pregunta
-sobre una librería. Pero puedes forzarlo:
-
-```
-usa context7 para traerme la documentación actual de routing de Next.js
-```
-
-Consejo sobre las queries: **una consulta = un concepto**. `"React useEffect cleanup
-function"` funciona; `"routing y auth y caching en Next.js"` no.
-
-### Utilidades en el día a día
-
-- **Documentación al día** de librerías que cambian rápido
-- **APIs salidas después de la fecha de corte**
-- **Migraciones entre versiones mayores**
-- **Consulta de una versión concreta**, no "la última" — `/vercel/next.js/v14.3.0`
-- **Menos APIs inventadas** y firmas de funciones incorrectas
-- **Configuración exacta** de herramientas y build
-- **Ejemplos de código sacados de la doc oficial**, no reconstruidos de memoria
-- **Librerías de nicho** con poca presencia en el entrenamiento
-- **Uso de CLIs** y sus flags reales
-- **Servicios cloud y SDKs** con cambios frecuentes
-- **Alternativa a buscar en la web**: va directo a la doc del proyecto
-- **Onboarding a un stack** que no conoces
-- **Menos saltos al navegador** durante la sesión
-
-### Dónde no aporta
-
-**Refactorizar tu propio código** · **Depurar lógica de negocio** · **Conceptos
-generales de programación** · **Código escrito desde cero sin librerías** ·
-**Librerías estables que llevan años sin cambiar**
-
-Ese último caso es el de la prueba que hicimos: "cómo crear un componente funcional
-en React" funcionó perfectamente, pero no aportó nada que Claude no supiera ya. La
-diferencia real se nota con Server Components, hooks recientes como `use()` o
-migraciones entre versiones mayores.
-
-### Detalles prácticos
-
-**Hay que reiniciar Claude Code.** Las tools MCP se cargan al arrancar la sesión. Si
-instalas un servidor a mitad de conversación, no aparece hasta reiniciar.
-
-**Funciona sin API key**, con rate limits más bajos. Si te quedas corto, la key gratuita
-está en [context7.com/dashboard](https://context7.com/dashboard):
-
-```bash
-claude mcp remove context7 -s user
-claude mcp add --transport http --scope user context7 https://mcp.context7.com/mcp \
-  --header "CONTEXT7_API_KEY: tu-key"
-```
-
-**Verifica antes de instalar.** La forma habitual de instalarlo es
-`npx ctx7@latest setup`, que descarga y ejecuta código. Merece la pena comprobar de
-dónde viene:
-
-```bash
-npm view ctx7 description repository.url maintainers
-# → 'Context7 CLI - Fetch documentation context and configure Context7'
-# → git+https://github.com/upstash/context7.git
-# → fahreddin.ozcan <fahreddin@upstash.com>
-```
-
-**El wizard `setup` es interactivo**, y un agente no puede escribir en un prompt
-interactivo: mejor el comando directo `claude mcp add`, que no pide nada por consola.
-
----
-
-## Estructura del repositorio
-
-```
+```text
 base-project/
-├── .claude/
-│   └── skills/
-│       ├── git-conventional-commits/
-│       │   ├── SKILL.md
-│       │   └── references/comandos.md
-│       └── pipeline-reglas-de-limpieza/
-│           └── SKILL.md    ← la única escrita después de medir
-├── temario/                ← el material didáctico: criterio y mediciones
-│   ├── 00-la-tesis.md … 07-instalar-una-capacidad.md
-│   ├── anexo-volatil.md    ← lo que caduca, separado a propósito
-│   └── experimentos/       ← el método y las mediciones, con salidas reales
-├── src/pipeline/
-│   ├── generar_datos.py    ← fabrica el CSV sucio, con semilla fija
-│   ├── cargar.py           ← DuckDB lee el CSV: todo como texto, a propósito
-│   ├── limpiar.py          ← una regla por función. El corazón del ejercicio
-│   ├── metricas.py
-│   ├── informe.py
-│   ├── recuento.py         ← trazabilidad de lo que se descarta
-│   └── __main__.py
+├── .claude/skills/          ← las convenciones: versionadas, del proyecto
+│   ├── git-conventional-commits/
+│   └── pipeline-reglas-de-limpieza/   ← la única escrita después de medir
+├── temario/                 ← criterio (capítulos) y prueba (experimentos)
+│   └── experimentos/diffs/  ← las salidas reales, byte a byte
+├── src/pipeline/            ← generar · cargar · limpiar · métricas · informe
 ├── tests/
-├── datos/                  ← generado, fuera de git
-├── Dockerfile · compose.yaml
-├── pyproject.toml · uv.lock
-├── .gitignore
-└── README.md
+└── datos/                   ← generado, fuera de git
 ```
 
-Las skills viven **en el repo** (versionadas, compartibles). El MCP vive en la config
-**global** del usuario. Esa asimetría es intencional: las convenciones son del
-proyecto, la capacidad de leer documentación es tuya.
+Las skills viven **en el repo**; los servidores MCP, en la configuración **del usuario**.
+La asimetría es intencional: las convenciones son del proyecto, las capacidades son tuyas.
 
-## Comandos de referencia
-
-```bash
-# El pipeline
-uv sync                               # instala dependencias
-uv run python -m pipeline             # ejecuta el pipeline completo
-uv run python -m pipeline --solo-generar   # solo fabrica el CSV
-uv run pytest                         # tests
-docker compose run --rm pipeline      # sin instalar nada en local
-
-# Skills — no hay CLI: se crean como archivos en .claude/skills/
-# Se activan solas por la description, o a mano como slash command:
-#   /git-conventional-commits
-
-# MCP
-claude mcp list                       # servidores y estado
-claude mcp get <nombre>               # detalle
-claude mcp add --transport http --scope user <nombre> <url>
-claude mcp remove <nombre> -s user
-```
+> **Este repositorio tuvo tres skills y tiene dos.** La tercera se borró tras medir que en
+> 40 sesiones no se cargó ni una vez. Restar también es un resultado.

@@ -121,7 +121,8 @@ Y una advertencia práctica que salió de la misma medición: **no audites esto 
 de servidores conectados.** Declaraba cinco que no aportaban ninguna herramienta a la
 sesión. Lo que cuenta es lo que llega al contexto, no lo que dice el inventario.
 
-*(Razonamiento, no medición: pendiente de experimento propio.)*
+*(Lo de arriba está medido. Lo que sigue sin medir es si esto se generaliza a servidores
+que sí aportan capacidad nueva: aquí solo se probó uno que se solapaba con un CLI.)*
 
 ---
 
