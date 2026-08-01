@@ -33,6 +33,7 @@ Es importante decir qué está probado y qué no, porque la tesis es fácil de s
 | Un punto que la skill no sostenía, **resuelto en 10 líneas de test** | [Exp 03](experimentos/03-bajar-al-codigo.md) |
 | Un servidor MCP conectado y no usado: **647 caracteres siempre, 0 invocaciones en 26 sesiones** | [Exp 04](experimentos/04-coste-de-un-mcp.md) |
 | Con `gh` autenticado y el MCP de GitHub delante, **el agente eligió el MCP 3/3** | [Exp 04](experimentos/04-coste-de-un-mcp.md) |
+| Una skill propia, bien escrita y nunca cargada: **518 caracteres, 0 de 40 sesiones** | [Exp 05](experimentos/05-la-skill-que-nunca-gana.md) |
 
 **Lo que no:** el solapamiento se midió con **una sola tarea, de solo lectura, y un solo
 servidor**. Que ahí el MCP ganara la elección 3/3 no dice que la gane siempre. Y hubo que

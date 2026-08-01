@@ -41,7 +41,7 @@ caduca cuando en realidad caducó el 20%.
 | 02 | [¿Se arregla cambiando cómo está escrita la regla?](experimentos/02-criterio-vs-lista.md) | ✅ cerrado |
 | 03 | [Bajar al código lo que la skill no sostiene](experimentos/03-bajar-al-codigo.md) | ✅ cerrado |
 | 04 | [Qué cuesta de verdad una capacidad instalada (MCP)](experimentos/04-coste-de-un-mcp.md) | ✅ cerrado |
-| 05 | [La skill que nunca gana](experimentos/05-la-skill-que-nunca-gana.md) | 🔵 pre-registrado |
+| 05 | [La skill que nunca gana](experimentos/05-la-skill-que-nunca-gana.md) | ✅ cerrado |
 
 ---
 

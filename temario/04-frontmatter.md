@@ -1,7 +1,8 @@
 # 04 — El frontmatter: lo que decide si tu skill existe
 
 > **Evidencia:** [experimento 01](experimentos/01-convenciones-pipeline.md) ·
-> [experimento 02](experimentos/02-criterio-vs-lista.md)
+> [experimento 02](experimentos/02-criterio-vs-lista.md) ·
+> [experimento 05](experimentos/05-la-skill-que-nunca-gana.md)
 
 ## Las cuatro líneas que se leen siempre
 
@@ -114,25 +115,34 @@ Va en minúsculas con guiones y coincide con el nombre de la carpeta. Descríbel
 
 ## Cuando dos skills se pisan
 
-En este repo hay dos skills de Git y podrían haber competido en cada commit. Se resolvió
-partiéndolas por una frontera que se declara **en los dos sitios**:
+Este repo tuvo dos skills de Git que competían en cada commit. Se intentó resolver
+partiéndolas por una frontera declarada **en los dos cuerpos**:
 
-| Skill | Cubre |
+| Skill | Cubría |
 |---|---|
 | `git-conventional-commits` | **El contenido del mensaje** |
 | `github-workflow` | **Dónde va el trabajo y qué pasa después**: rama, comprobaciones, PR, releases, recuperación |
 
-Y cada cuerpo empieza remitiendo a la otra:
+Cada cuerpo empezaba remitiendo a la otra, y la frontera era correcta. **No sirvió de
+nada.** Contadas las invocaciones sobre 40 sesiones reales
+([exp 05](experimentos/05-la-skill-que-nunca-gana.md)):
 
-> Esta skill cubre el **contenido del mensaje** de commit. El **flujo de trabajo** […] lo
-> cubre la skill `github-workflow`.
+| | `description` | Invocaciones |
+|---|---|---|
+| `git-conventional-commits` | 276 caracteres | 5 |
+| `github-workflow` | 518 caracteres | **0** |
 
-> **Dos skills que se solapan no se arreglan en el `description`: se arreglan decidiendo
-> la frontera y escribiéndola en las dos.** Si no puedes enunciarla en una frase, es una
-> sola skill.
+Cinco a cero, en sesiones donde las dos aplicaban. La segunda se borró.
 
-Ambas se dispararon con Haiku y produjeron mensajes impecables — **las skills funcionan
-con modelos modestos**. Lo que ninguna de las dos cubre es *decidir si tocaba commitear*,
+> **Una frontera entre skills solo existe si está en las `description`.** El cuerpo no se
+> lee si la `description` no gana: escribirla ahí es documentarla para un lector que no
+> llega.
+
+Y el corolario, que es lo que de verdad hay que hacer: si no puedes enunciar la frontera en
+una frase **dentro de cada `description`**, es una sola skill.
+
+La que sí se dispara lo hace también con Haiku, y produce mensajes impecables — **las
+skills funcionan con modelos modestos**. Lo que no cubre es *decidir si tocaba commitear*,
 que es juicio y no formato, y eso se vio en las mediciones: Haiku commiteó sin que se lo
 pidieran en 3 de 6 pasadas.
 
@@ -146,7 +156,7 @@ pidieran en 3 de 6 pasadas.
 | Describir el tema, no el hueco | Compite con lo que el código ya enseña |
 | Disparadores en un idioma distinto al de las peticiones | Nadie los va a escribir |
 | Solo el caso de "añadir" | No llega al cambiar ni al borrar |
-| Dos skills sin frontera declarada | Se carga cualquiera de las dos, a suertes |
+| Dos skills con la frontera declarada solo en el cuerpo | Gana siempre la misma, y no es «a suertes»: 5-0 |
 
 Y el diagnóstico que sirve para todos: **si una skill no se dispara nunca, sospecha del
 `description` antes que del cuerpo.** El cuerpo puede ser perfecto y no llegar a leerse.

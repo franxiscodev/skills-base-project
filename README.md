@@ -149,13 +149,8 @@ o las metes en `CLAUDE.md` y ocupan contexto permanentemente aunque no toquen.
 │   ├── SKILL.md                    ← se carga al activarse
 │   └── references/
 │       └── comandos.md             ← se carga solo si hace falta
-└── github-workflow/
-    ├── SKILL.md
-    └── references/
-        ├── gh-cli.md
-        ├── pull-requests.md
-        ├── releases-y-tags.md
-        └── recuperacion.md
+└── pipeline-reglas-de-limpieza/
+    └── SKILL.md
 ```
 
 Cada skill es **una carpeta** con un `SKILL.md` obligatorio. El nombre de la carpeta
@@ -191,9 +186,8 @@ El patrón de los tres niveles, que es lo que mantiene el contexto bajo control:
 2. **`SKILL.md`** — se carga al activarse la skill.
 3. **`references/*.md`** — se cargan solo si Claude decide que los necesita.
 
-Por eso `github-workflow` tiene el cheat sheet de `gh`, el detalle de las PRs y el
-procedimiento de recuperación en archivos aparte: el 90% de las veces basta con el
-`SKILL.md`, y el resto no se paga.
+Por eso `git-conventional-commits` tiene el cheat sheet de comandos en un archivo
+aparte: casi siempre basta con el `SKILL.md`, y el resto no se paga.
 
 Los referencias se enlazan con Markdown normal desde el `SKILL.md`:
 
@@ -201,23 +195,16 @@ Los referencias se enlazan con Markdown normal desde el `SKILL.md`:
 Ver [references/recuperacion.md](references/recuperacion.md) para el procedimiento.
 ```
 
-### Las tres skills de este repo
+### Las skills de este repo
 
-Están **deliberadamente separadas** por responsabilidad, y se aplican a la vez:
+Fueron tres. Son dos: la tercera se borró después de medir que no se disparaba nunca
+([exp 05](temario/experimentos/05-la-skill-que-nunca-gana.md)).
 
 #### `git-conventional-commits` — el *qué* dice el commit
 
 Formato del mensaje, los nueve tipos permitidos (`feat`, `fix`, `docs`, `style`,
 `refactor`, `perf`, `test`, `build`, `ci`, `chore`), imperativo y minúscula, scope,
 breaking changes con `!` y pie `BREAKING CHANGE:`.
-
-#### `github-workflow` — el *dónde* va y el *qué pasa después*
-
-Organizada en checkpoints, que es lo que la hace utilizable:
-
-- **Checkpoint A** — antes de commitear: ¿en qué branch estoy? ¿debería ramificar?
-- **Checkpoint B** — commit en la branch equivocada: cómo recuperarlo
-- **Checkpoint C** — antes de push: origen, destino, commits exactos, confirmación
 
 #### `pipeline-reglas-de-limpieza` — lo que el código **no** puede enseñar
 
@@ -237,11 +224,15 @@ El experimento completo, con las salidas reales, está en
 
 ### Lecciones aprendidas al escribirlas
 
-**Separar responsabilidades funciona mejor que una skill gigante.** El contenido del
-mensaje y el flujo de trabajo son cosas distintas. Cada `SKILL.md` referencia al otro
-explícitamente para que Claude sepa que ambos aplican.
+**Separar responsabilidades no basta, y esto se midió.** Partimos Git en dos skills
+—el mensaje por un lado, el flujo de trabajo por otro— y cada `SKILL.md` remitía al
+otro explícitamente. Sobre 40 sesiones reales, una se cargó 5 veces y la otra **0**.
 
-**Hay que escribir las excepciones, no solo las reglas.** `github-workflow` dedica una
+> **La frontera entre dos skills solo existe si está en las `description`.** Escribirla
+> en el cuerpo es documentarla para un lector que no llega, porque el cuerpo no se lee
+> si la `description` no gana.
+
+**Hay que escribir las excepciones, no solo las reglas.** La skill borrada dedicaba una
 sección entera a *cuándo NO avisar* de que estás en `main`:
 
 > Avisar cuando no toca convierte la regla en ruido y hace que se ignore siempre.
@@ -252,8 +243,9 @@ un proyecto personal — y acabarías ignorándola.
 **Documentar los límites reales del agente.** Claude no puede escribir en un prompt
 interactivo (passphrase de SSH, `gh auth login`, `git rebase -i`). Y el fallo es
 engañoso: una passphrase no introducida aparece como `Permission denied (publickey)`,
-que parece un problema de claves. La skill lo recoge y manda comprobar `ssh-add -l`
-antes, para pasarte el comando en vez de intentarlo y fallar.
+que parece un problema de claves. La skill lo recogía y mandaba comprobar `ssh-add -l`
+antes, para pasarte el comando en vez de intentarlo y fallar — y **nunca llegó a
+leerse**, que es exactamente el problema de poner algo valioso donde no se activa.
 
 **Poner reglas no negociables explícitas.** Nunca `--force` sobre branch compartida,
 nunca commitear una feature en `main`, siempre revisar el diff buscando secretos.
@@ -390,9 +382,8 @@ npm view ctx7 description repository.url maintainers
 # → fahreddin.ozcan <fahreddin@upstash.com>
 ```
 
-**El wizard `setup` es interactivo**, así que aplica lo mismo que documenta la skill
-`github-workflow`: mejor el comando directo `claude mcp add`, que no pide nada por
-consola.
+**El wizard `setup` es interactivo**, y un agente no puede escribir en un prompt
+interactivo: mejor el comando directo `claude mcp add`, que no pide nada por consola.
 
 ---
 
@@ -405,17 +396,10 @@ base-project/
 │       ├── git-conventional-commits/
 │       │   ├── SKILL.md
 │       │   └── references/comandos.md
-│       ├── github-workflow/
-│       │   ├── SKILL.md
-│       │   └── references/
-│       │       ├── gh-cli.md
-│       │       ├── pull-requests.md
-│       │       ├── releases-y-tags.md
-│       │       └── recuperacion.md
 │       └── pipeline-reglas-de-limpieza/
 │           └── SKILL.md    ← la única escrita después de medir
 ├── temario/                ← el material didáctico: criterio y mediciones
-│   ├── 00-la-tesis.md … 06-conversacion-nueva.md
+│   ├── 00-la-tesis.md … 07-instalar-una-capacidad.md
 │   ├── anexo-volatil.md    ← lo que caduca, separado a propósito
 │   └── experimentos/       ← el método y las mediciones, con salidas reales
 ├── src/pipeline/
@@ -451,7 +435,6 @@ docker compose run --rm pipeline      # sin instalar nada en local
 # Skills — no hay CLI: se crean como archivos en .claude/skills/
 # Se activan solas por la description, o a mano como slash command:
 #   /git-conventional-commits
-#   /github-workflow
 
 # MCP
 claude mcp list                       # servidores y estado

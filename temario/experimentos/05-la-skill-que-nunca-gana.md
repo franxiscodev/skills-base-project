@@ -1,33 +1,24 @@
 # Experimento 05 — La skill que nunca gana
 
 > Método: [PLANTILLA.md](PLANTILLA.md).
-> **Estado: pre-registrado, sin ejecutar.** Todo lo que hay por debajo de la hipótesis se
-> escribió antes de lanzar una sola pasada. Si el diseño se enmienda, se enmienda aquí y
-> con su motivo ([regla 11](PLANTILLA.md)).
+> **Estado: cerrado sin pasadas controladas.** El pre-registro con tres ramas y diez
+> pasadas se escribió, se commiteó (`7c552c6`) y **se canceló antes de ejecutar**. El
+> motivo está abajo, en «Por qué no se ejecutó».
 
-**Hipótesis** *(escrita antes de ejecutar nada)*:
+**Hipótesis** *(escrita antes de decidir nada, y conservada)*:
 
 > `github-workflow` no se dispara porque **compite con `git-conventional-commits` y
-> pierde**: comparten disparadores literales y la más corta gana. Si se retira la
-> competidora, `github-workflow` empezará a dispararse con la misma `description` que hoy
-> no le sirve de nada.
+> pierde**: comparten disparadores literales y la más corta gana.
 
-La hipótesis alternativa, también escrita por adelantado: **el problema es suyo y no de la
-competencia** — su `description` nombra el territorio tres veces y no nombra el hueco, que
-es el fallo que el [capítulo 04](../04-frontmatter.md) da por diagnosticado. En ese caso
-retirar a la competidora no cambiará nada.
-
-El diseño distingue las dos. Esa es toda su razón de ser.
+**Sigue sin comprobarse.** No se sabe si pierde por competir o por estar mal escrita, y este
+experimento ya no va a averiguarlo. Lo que sí quedó medido es que no se dispara.
 
 ---
 
-## 0. La observación de partida
+## El recuento
 
-⚠️ **Esto no es un resultado del experimento.** Es el recuento retrospectivo que lo motiva,
-hecho sobre sesiones que nadie había planificado como medición. Se registra aquí porque es
-lo que hay que explicar, no como conclusión.
-
-Sobre las **40 transcripciones** de sesión de este proyecto:
+Sobre las **40 transcripciones** de sesión de este proyecto, contando invocaciones reales y
+no menciones del nombre:
 
 | Skill | `description` | Invocaciones |
 |---|---|---|
@@ -35,12 +26,12 @@ Sobre las **40 transcripciones** de sesión de este proyecto:
 | `git-conventional-commits` | 276 caracteres | 5 |
 | **`github-workflow`** | **518 caracteres** | **0** |
 
-La skill más cara del repositorio no se ha cargado nunca. Existe desde el 29 de julio de
-2026 (`8bdba74`), es decir, durante toda la campaña de mediciones.
+La `description` más cara del repositorio, y la única que nunca llegó a cobrarse. Existía
+desde el 29 de julio de 2026 (`8bdba74`): toda la campaña.
 
 **No fue por falta de ocasión.** Once sesiones ejecutaron `git commit`; diez hicieron push
 o crearon ramas. Y en las cinco donde `git-conventional-commits` sí se cargó, las cinco
-hicieron además trabajo del territorio exclusivo de `github-workflow`:
+hicieron además trabajo del territorio **exclusivo** de la que perdió:
 
 | Sesión | `git commit` | push / rama | Skill cargada |
 |---|---|---|---|
@@ -50,156 +41,116 @@ hicieron además trabajo del territorio exclusivo de `github-workflow`:
 | `d99f9288` | 3 | 1 | `git-conventional-commits` |
 | `f865ca23` | 2 | 1 | `git-conventional-commits` |
 
-**Cinco a cero en enfrentamiento directo.** No es azar entre dos opciones parecidas: es
-sistemático.
+**Cinco a cero en enfrentamiento directo.** No es azar entre dos opciones parecidas.
 
-### Qué contradice esto del material ya publicado
+### Cómo se contó
 
-El [capítulo 04](../04-frontmatter.md) sostiene que el solapamiento entre las dos skills de
-Git **se resolvió** partiéndolas por una frontera *"que se declara en los dos sitios"*, y
-enseña el enunciado que empieza cada cuerpo. La tabla de fallos del mismo capítulo predice
-que dos skills sin frontera se cargan *"a suertes"*.
+Artefacto: las transcripciones, buscando la forma literal de la llamada.
+
+```bash
+grep -o '"name":"Skill","input":{"skill":"[a-z-]*"' *.jsonl
+```
+
+⚠️ **No se cuenta por el nombre suelto.** Buscar `github-workflow` da decenas de
+resultados: son las sesiones donde se ha escrito *sobre* la skill, no donde se ha usado. Es
+el mismo falso positivo que en el [experimento 04](04-coste-de-un-mcp.md).
+
+Y el artefacto se validó antes de contar ([regla 10](PLANTILLA.md)): la misma búsqueda
+devuelve 13 y 5 para las otras dos skills. Un registro que solo diera ceros no probaría
+nada.
+
+---
+
+## Por qué no se ejecutó
+
+El diseño era correcto y la decisión de no ejecutarlo también. Las dos cosas a la vez:
+
+> **Diez pasadas controladas habrían sido peor evidencia que las cuarenta sesiones reales
+> que ya había.** Sesiones no planificadas como medición, con trabajo de verdad, sin nadie
+> intentando que saliera nada.
+
+Lo que las diez pasadas habrían añadido es el **mecanismo** —competencia o redacción— y el
+mecanismo no cambiaba la decisión. Con 0 de 40, la skill se toca igual.
+
+Se canceló además por un motivo que conviene decir en voz alta, porque le pasa a cualquiera
+que monte un método así:
+
+> **La campaña de mediciones se estaba convirtiendo en el proyecto.** Medir tiene el mismo
+> problema que instalar: cada medición individual parece barata y ninguna se cuenta contra
+> el total.
+
+Es exactamente la tesis del material aplicada al material. Se anota como coste real, no
+como anécdota.
+
+---
+
+## Qué se hizo con el resultado
+
+**Se borró la skill.** Y se pudo borrar con riesgo cero por la misma razón por la que había
+que borrarla:
+
+> **Quitar algo que nunca se ejecutó no puede romper nada.** El 0 de 40 es a la vez el
+> motivo del borrado y la garantía de que es seguro.
+
+Su cuerpo era bueno —checkpoints antes de commitear y de hacer push, recuperación de
+errores, la comprobación de `ssh-add -l` antes de una operación remota— y da igual: no se
+leyó ni una vez. Sigue en el historial de Git (`8bdba74`) si alguna vez hace falta.
+
+> **Una skill que no se dispara no es una skill a medias: es texto que pagas siempre y no
+> recibes nunca.** No hay término medio, porque el cuerpo o se carga entero o no se carga.
+
+---
+
+## Qué obligó a corregir del material publicado
+
+El [capítulo 04](../04-frontmatter.md) daba por resuelto el solapamiento entre las dos
+skills de Git *"partiéndolas por una frontera que se declara en los dos sitios"*, y su tabla
+de fallos predecía que dos skills sin frontera se cargan *"a suertes"*.
 
 Ninguna de las dos cosas resiste el recuento:
 
-- La frontera está declarada **en los cuerpos**, y el cuerpo no se lee si la `description`
-  no gana. Está escrita en el único sitio que no participa en la decisión.
+- La frontera estaba declarada **en los cuerpos**. El cuerpo no se lee si la `description`
+  no gana: estaba escrita en el único sitio que no participa en la decisión.
 - No salió *a suertes*. Salió 5-0.
 
-Si el experimento confirma el mecanismo, ese pasaje del capítulo 04 hay que reescribirlo.
+> **Una frontera entre skills solo existe si está en las `description`.** Todo lo demás es
+> documentación para un lector que no llega.
 
 ---
 
-## El problema
+## Qué aprendimos
 
-Dos skills cubren Git en este repositorio y sus disparadores literales se pisan:
+1. **Una skill puede costar todos los días y no aportar ningún día.** 518 caracteres
+   permanentes, 0 invocaciones, 40 sesiones.
+2. **La frontera entre dos skills se declara donde se decide**, y se decide en la
+   `description`.
+3. **Quitar lo que nunca se disparó es la única poda gratis que existe.** Si dudas de si
+   una skill sirve, mira si se ha cargado alguna vez antes de discutir su contenido.
+4. **Cuenta las mediciones como cuentas las instalaciones.** Un método que obliga a medir
+   antes de añadir también puede engordar hasta sustituir al trabajo.
+5. **Un pre-registro cancelado no es un experimento fallido.** Es una decisión de coste, y
+   se publica con su motivo — o el registro solo enseña lo que salió bien.
 
-| Disparador | `git-conventional-commits` | `github-workflow` |
-|---|---|---|
-| "commit" / "commitear" | ✅ | ✅ |
-| "push" | ✅ | ✅ |
-| "rama" / "branch" | ✅ | ✅ |
-| "merge" | ✅ | ✅ |
-| "pull request" / "PR" | ❌ | ✅ |
-| "me equivoqué de rama" | ❌ | ✅ |
-| "conflicto" / "deshacer" | ❌ | ✅ |
+## Cuándo NO hacer esto
 
-La segunda cubre estrictamente más territorio, cuesta casi el doble y nunca se carga. Su
-cuerpo —los checkpoints antes de commitear y antes de hacer push, el procedimiento de
-recuperación, la comprobación de `ssh-add -l`— no ha llegado a leerse ni una vez.
-
----
-
-## Cómo se cuenta el disparo
-
-**Artefacto:** las transcripciones de sesión, buscando el registro literal de invocación:
-
-```text
-"name":"Skill","input":{"skill":"<nombre>"
-```
-
-### Validación del artefacto (regla 10)
-
-Antes de fijar el recuento se comprobó que el registro **puede contener la señal**: la
-misma búsqueda devuelve 13 invocaciones de `pipeline-reglas-de-limpieza` y 5 de
-`git-conventional-commits`. Un artefacto que solo devolviera ceros no probaría nada.
-
-⚠️ **No se cuenta por el nombre suelto.** Buscar `github-workflow` en las transcripciones
-da decenas de resultados: son las sesiones donde se ha escrito *sobre* la skill —incluida
-esta— no donde se ha usado. Es el mismo falso positivo que en el
-[experimento 04](04-coste-de-un-mcp.md), y se evita exigiendo la forma completa de la
-llamada.
-
----
-
-## El diseño
-
-Tres ramas, con la misma tarea y el mismo estado de partida. Lo único que cambia entre
-ellas es qué hay en `.claude/skills/`.
-
-| Rama | Qué hay instalado | Qué aísla |
-|---|---|---|
-| **A — control** | Las dos skills, tal como están hoy | Reproduce la observación bajo condiciones controladas |
-| **B — sin competencia** | Solo `github-workflow` | ¿Pierde por competir, o no gana nunca? |
-| **C — redacción** | Las dos, con la `description` de `github-workflow` reescrita | ¿Se arregla escribiendo mejor, sin quitar nada? |
-
-`pipeline-reglas-de-limpieza` **no se toca en ninguna rama**. Es la variable de control: si
-sigue comportándose igual mientras las otras se mueven, el cambio viene del cambio.
-
-### El prompt principal
-
-```text
-Commitea los cambios que hay pendientes.
-```
-
-Territorio compartido, y literalmente el caso donde se midió el 5-0. **Tres pasadas por
-rama**, sesión limpia, mismo commit de partida.
-
-### La sonda diagnóstica
-
-Una sola pasada, solo sobre la rama A:
-
-```text
-Me equivoqué de rama, estos commits tenían que ir en otra.
-```
-
-Es un disparador **literal y exclusivo** de `github-workflow`: aparece entrecomillado en su
-`description` y no está en la otra skill. Si tampoco se carga aquí, la competencia no puede
-ser la explicación y la hipótesis principal cae sin necesidad de la rama B.
-
-⚠️ **Es diagnóstico, no resultado.** n=1 y prompt distinto: no entra en ninguna comparación.
-
-### La `description` de la rama C
-
-Se reescribirá siguiendo el criterio del [capítulo 04](../04-frontmatter.md), que hoy la
-skill incumple en los tres puntos. Se redacta **antes** de ver los resultados de A y B, y
-se pega aquí literalmente antes de ejecutar la rama C.
-
-| Criterio del capítulo 04 | Hoy |
-|---|---|
-| Nombrar el hueco, no el territorio | ❌ nombra el territorio, tres veces |
-| Disparadores literales | ✅ los tiene, y aun así no gana |
-| Nombrar el fichero propio | ❌ no nombra ninguno |
-
----
-
-## Tabla de interpretación, escrita antes de ejecutar
-
-| A | B | C | Qué significa | Qué se hace |
-|---|---|---|---|---|
-| 0/3 | **3/3** | — | **Pierde por competir.** La hipótesis se confirma | Reescribir el capítulo 04: la frontera hay que declararla en la `description`, no en el cuerpo |
-| 0/3 | **0/3** | 3/3 | El problema era **su redacción**, no la competencia | Confirma el criterio del capítulo 04 con un caso negativo propio |
-| 0/3 | 0/3 | 0/3 | No se arregla desde el frontmatter | La skill sobra: **se borra**, y eso es el resultado |
-| 3/3 | — | — | La observación no se reproduce en condiciones controladas | Se registra el fallo y se investiga qué distinguía a las 40 sesiones |
-
-**Y la decisión que se toma pase lo que pase:** una `description` de 518 caracteres que
-gana 0 de 3 en su propio territorio no se queda como está. La única pregunta abierta es si
-se reescribe o se borra.
-
-> Se pre-registra también esto, porque es donde el método se pone a prueba de verdad: la
-> rama que acabe ganando puede ser *borrar la skill*, y ese resultado se publica igual.
-
----
-
-## Lo que este experimento NO mide
-
-- **Si el cuerpo de `github-workflow` es bueno.** Nunca se ha leído; puede ser excelente e
-  irrelevante. Aquí solo se mide si llega a leerse.
-- **Si el orden o la longitud son la causa.** Con dos skills no se puede separar "más
-  corta gana" de "mejor escrita gana": son la misma diferencia en esta muestra.
-- **Nada sobre otros modelos.** Las pasadas irán con un solo modelo, indicado abajo.
-
----
+- **Cuando no tengas el histórico.** El 0 de 40 vale porque había cuarenta sesiones reales
+  detrás. Con tres, el experimento controlado sigue siendo el camino.
+- **Cuando la skill sea nueva.** Que no se haya disparado todavía no dice nada; puede que
+  no haya habido ocasión. Aquí las hubo once.
+- **Cuando la decisión sí dependa del mecanismo.** Si el plan fuera *reescribir* en vez de
+  *borrar*, saber si pierde por competir o por redacción es justo lo que necesitas, y
+  entonces las diez pasadas se pagan.
 
 ## Condiciones y reproducibilidad
 
-- **Fecha del pre-registro:** 1 de agosto de 2026
-- **Commit de partida:** por fijar antes de la primera pasada, verificado con `git log`
-- **Modelo:** por fijar
-- **Observación de partida:** 40 transcripciones en
+- **Fecha:** 1 de agosto de 2026
+- **Fuente:** 40 transcripciones en
   `~/.claude/projects/c--APRENDER-ClaudeCode-base-project/`
-- **Diffs:** cada pasada guarda el suyo en [`diffs/`](diffs/) como `exp05-<rama>-<n>.diff`
+- **Pre-registro cancelado:** commit `7c552c6`, recuperable con
+  `git show 7c552c6:temario/experimentos/05-la-skill-que-nunca-gana.md`
+- **Cómo repetirlo:** contar invocaciones con la forma literal de la llamada, nunca por el
+  nombre.
 
-> Los resultados con modelos generativos **varían entre ejecuciones**. Este registro
-> documenta lo que ocurrió en las condiciones indicadas, no una garantía. Si al repetirlo
-> obtienes algo distinto, eso también es información: anótalo.
+> Este experimento **no tiene diffs**: no generó pasadas. La evidencia son las
+> transcripciones, que no viajan con el repositorio porque contienen trabajo real. El
+> recuento es reproducible con el comando de arriba sobre las propias.
