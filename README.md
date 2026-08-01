@@ -110,6 +110,7 @@ base-project/
 │   └── pipeline-reglas-de-limpieza/   ← la única escrita después de medir
 ├── temario/                 ← criterio (capítulos) y prueba (experimentos)
 │   └── experimentos/diffs/  ← las salidas reales, byte a byte
+├── articulo/                ← la divulgación, versionada aquí y no en la plataforma
 ├── src/pipeline/            ← generar · cargar · limpiar · métricas · informe
 ├── tests/
 └── datos/                   ← generado, fuera de git
