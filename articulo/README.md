@@ -5,12 +5,17 @@ LinkedIn es una copia, no la fuente.
 
 | Pieza | Fichero | Para qué |
 |---|---|---|
-| **Post del feed** | [post-linkedin.md](post-linkedin.md) | Lo único que la gente ve sin hacer clic. Dos opciones |
-| **Artículo** | [articulo-linkedin.md](articulo-linkedin.md) | ~1.400 palabras. Nativo de LinkedIn, con el repo enlazado dentro |
-| **Portada** | [`README.md`](../README.md) de la raíz | Donde cae quien llegue desde el artículo |
+| **El plan de la serie** | [serie.md](serie.md) | Nueve entregas con arco, cadencia y las preguntas de cada una. **Empieza por aquí** |
+| **Síntesis** | [articulo-linkedin.md](articulo-linkedin.md) | ~1.400 palabras. Se reconvierte en la **entrega 9**, el cierre |
+| **Post del feed** | [post-linkedin.md](post-linkedin.md) | Dos versiones del gancho. Materia prima de la **entrega 1** |
+| **Portada** | [`README.md`](../README.md) de la raíz | Donde cae quien llegue desde la serie |
 
-La tercera pieza ya está hecha: el README del repositorio abre con la tesis y la tabla de
+La portada ya está hecha: el README del repositorio abre con la tesis y la tabla de
 resultados medidos. Funciona como landing sin ser una landing.
+
+⚠️ **El artículo largo no se publica tal cual.** Quema los cinco hallazgos en una sola
+pieza, que fue el error del primer borrador. Su sitio es el final de la serie, cuando cada
+número ya se ha contado por separado.
 
 ## Qué números se citan y de dónde salen
 
