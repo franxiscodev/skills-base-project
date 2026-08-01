@@ -3,19 +3,28 @@
 Las piezas para publicar el material del repositorio. Se escriben y se versionan **aquí**;
 LinkedIn es una copia, no la fuente.
 
-| Pieza | Fichero | Para qué |
+**Empieza por [00-serie.md](00-serie.md):** el arco completo, la cadencia y por qué cada
+entrega va donde va. Las nueve piezas están escritas y listas para copiar.
+
+| # | Entrega | Formato |
 |---|---|---|
-| **El plan de la serie** | [serie.md](serie.md) | Nueve entregas con arco, cadencia y las preguntas de cada una. **Empieza por aquí** |
-| **Síntesis** | [articulo-linkedin.md](articulo-linkedin.md) | ~1.400 palabras. Se reconvierte en la **entrega 9**, el cierre |
-| **Post del feed** | [post-linkedin.md](post-linkedin.md) | Dos versiones del gancho. Materia prima de la **entrega 1** |
-| **Portada** | [`README.md`](../README.md) de la raíz | Donde cae quien llegue desde la serie |
+| [00](00-serie.md) | El plan de la serie | — |
+| [01](01-la-skill-que-borre.md) | La skill que borré | Post |
+| [02](02-la-medi-antes-de-escribirla.md) | La medí antes de escribirla, y no hacía falta | Post |
+| [03](03-el-error-que-antes-no-existia.md) | La escribí igual, y creó un error que antes no existía | **Artículo** |
+| [04](04-misma-regla-otra-redaccion.md) | Mismo contenido, otra redacción | Post |
+| [05](05-el-techo-y-el-suelo.md) | La skill sube el techo, el código sube el suelo | Post |
+| [06](06-647-caracteres-cero-usos.md) | 647 caracteres en cada sesión, cero veces usado | Post |
+| [07](07-la-herramienta-que-se-solapa.md) | Ya tenía la herramienta. Instalé la que se solapaba | Post |
+| [08](08-cuatro-intentos-ningun-error.md) | Cuatro intentos, ningún error, tres mediciones perdidas | **Artículo** |
+| [09](09-lo-que-me-costo-medirlo.md) | Lo que me costó medir todo esto | **Artículo**, cierre |
 
-La portada ya está hecha: el README del repositorio abre con la tesis y la tabla de
-resultados medidos. Funciona como landing sin ser una landing.
+Cada fichero trae el texto listo para pegar dentro de un bloque, y debajo las notas de por
+qué está escrito así.
 
-⚠️ **El artículo largo no se publica tal cual.** Quema los cinco hallazgos en una sola
-pieza, que fue el error del primer borrador. Su sitio es el final de la serie, cuando cada
-número ya se ha contado por separado.
+La **portada** ya está hecha: el [README del repositorio](../README.md) abre con la tesis y
+la tabla de resultados medidos, así que funciona como landing sin ser una landing. Es donde
+cae quien llegue desde la entrega 9.
 
 ## Qué números se citan y de dónde salen
 

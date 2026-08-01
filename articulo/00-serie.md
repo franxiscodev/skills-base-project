@@ -24,15 +24,15 @@ pieza, y ninguno se queda.
 
 | # | Título de trabajo | El número | Formato |
 |---|---|---|---|
-| 1 | La skill que borré | 518 caracteres, 0 de 40 sesiones | Post |
-| 2 | La medí antes de escribirla, y no hacía falta | Falló las 5 predicciones · 3 de 3 sin ella | Post |
-| 3 | La escribí igual, y creó un error que antes no existía | 6 README tocados, 0 correctos | **Artículo** |
-| 4 | Mismo contenido, otra redacción | 0 de 3 → 3 de 3 | Post |
-| 5 | La skill sube el techo, el código sube el suelo | 10 líneas de test, 6 de 6 fallos cazados | Post |
-| 6 | 647 caracteres en cada sesión, cero veces usado | 0 invocaciones en 26 sesiones | Post |
-| 7 | Ya tenía la herramienta. Instalé la que se solapaba | El agente eligió la nueva 3 de 3 | Post |
-| 8 | Cuatro intentos, ningún error, tres mediciones perdidas | 6 pasadas tiradas | **Artículo** |
-| 9 | Lo que me costó medir todo esto | El cierre, y el enlace al repositorio | **Artículo** |
+| [1](01-la-skill-que-borre.md) | La skill que borré | 518 caracteres, 0 de 40 sesiones | Post |
+| [2](02-la-medi-antes-de-escribirla.md) | La medí antes de escribirla, y no hacía falta | Falló las 5 predicciones · 3 de 3 sin ella | Post |
+| [3](03-el-error-que-antes-no-existia.md) | La escribí igual, y creó un error que antes no existía | 6 README tocados, 0 correctos | **Artículo** |
+| [4](04-misma-regla-otra-redaccion.md) | Mismo contenido, otra redacción | 0 de 3 → 3 de 3 | Post |
+| [5](05-el-techo-y-el-suelo.md) | La skill sube el techo, el código sube el suelo | 10 líneas de test, 6 de 6 fallos cazados | Post |
+| [6](06-647-caracteres-cero-usos.md) | 647 caracteres en cada sesión, cero veces usado | 0 invocaciones en 26 sesiones | Post |
+| [7](07-la-herramienta-que-se-solapa.md) | Ya tenía la herramienta. Instalé la que se solapaba | El agente eligió la nueva 3 de 3 | Post |
+| [8](08-cuatro-intentos-ningun-error.md) | Cuatro intentos, ningún error, tres mediciones perdidas | 6 pasadas tiradas | **Artículo** |
+| [9](09-lo-que-me-costo-medirlo.md) | Lo que me costó medir todo esto | El cierre, y el enlace al repositorio | **Artículo** |
 
 **Siete posts y tres artículos.** Los artículos van donde la profundidad se paga: el
 hallazgo más incómodo (3), el que más se generaliza fuera de Claude Code (8) y la síntesis
@@ -193,8 +193,7 @@ contra el total.
 **Aquí sí va el enlace al repositorio**, con los cinco experimentos, el método completo y
 las salidas reales de cada pasada.
 
-Base: el [artículo largo ya escrito](articulo-linkedin.md), que se reconvierte en esta
-entrega.
+Base: [09-lo-que-me-costo-medirlo.md](09-lo-que-me-costo-medirlo.md).
 
 ---
 
